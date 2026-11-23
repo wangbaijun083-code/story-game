@@ -1217,11 +1217,7 @@ const firebaseConfig = {
       const host = isHost();
       const myTeam = getMyTeamKey();
 
-      if (state.mode === 'online' && !host && !myTeam) {
-        showToast('你已被房主移出房間', 'warn');
-        leaveRoom(true);
-        return;
-      }
+     
 
       if (state.room.status === 'lobby') {
         if (state.view !== 'lobby') switchView('lobby');
