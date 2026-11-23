@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>故事接龍：兩組對決版｜社團多人互動手札</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Noto Sans TC & Noto Serif TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@500;700;900&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'Inter', 'sans-serif'],
+            serif: ['"Noto Serif TC"', 'serif'],
+          },
+          colors: {
+            paper: '#FAF6EE',
+            paperDark: '#F2EBD9',
+            ink: '#2C2824',
+            inkLight: '#6B6257',
+            teamA: '#3730A3',      // A 組：靛藍主題色
+            teamALight: '#EEF2FF',
+            teamB: '#EA580C',      // B 組：暖橘主題色
+            teamBLight: '#FFF7ED',
+          },
+          boxShadow: {
+            journal: '0 4px 20px -2px rgba(44, 40, 36, 0.08), 0 2px 6px -1px rgba(44, 40, 36, 0.04)',
+            book: '0 10px 35px -5px rgba(44, 40, 36, 0.14), inset 6px 0 12px -6px rgba(44, 40, 36, 0.12)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #FAF6EE;
+      background-image: radial-gradient(#DFD6C5 1px, transparent 1px);
+      background-size: 22px 22px;
+      color: #2C2824;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D6CBB8; border-radius: 9999px; }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: translateY(10px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-pop-in { animation: popIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    .animate-shake { animation: shake 0.32s ease-in-out; }
+
+    @keyframes pulseRingA {
+      0% { box-shadow: 0 0 0 0 rgba(55, 48, 163, 0.38); }
+      70% { box-shadow: 0 0 0 8px rgba(55, 48, 163, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(55, 48, 163, 0); }
+    }
+    @keyframes pulseRingB {
+      0% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.38); }
+      70% { box-shadow: 0 0 0 8px rgba(234, 88, 12, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(234, 88, 12, 0); }
+    }
+    .turn-glow-A { animation: pulseRingA 1.8s infinite; }
+    .turn-glow-B { animation: pulseRingB 1.8s infinite; }
+
+    .btn-journal {
+      transition: all 0.14s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .btn-journal:active:not(:disabled) {
+      transform: translateY(1.5px) scale(0.985);
+    }
+
+    .storybook-page {
+      background-color: #FFFDF9;
+      background-image: linear-gradient(to bottom, transparent 96%, rgba(214, 203, 184, 0.28) 97%);
+      background-size: 100% 2.35rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-orange-200 selection:text-ink">
+
+  <!-- ==================== 頂部導覽列 ==================== -->
+  <header class="sticky top-0 z-30 bg-[#FAF6EE]/95 backdrop-blur-md border-b border-[#E7DEC8]">
+    <div class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-2">
+      <!-- 品牌標題 -->
+      <button id="navHomeBtn" type="button" class="flex items-center gap-2.5 group focus:outline-none">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-teamA to-teamB text-white flex items-center justify-center shadow-sm group-hover:rotate-[-4deg] transition-transform text-lg">
+          📖
+        </div>
+        <div class="text-left">
+          <div class="flex items-center gap-1.5">
+            <h1 class="text-base sm:text-lg font-black tracking-tight text-ink leading-none">故事接龍</h1>
+            <span class="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-orange-100 text-teamB border border-orange-200">兩組對決版</span>
+          </div>
+          <p class="text-[11px] text-inkLight font-medium mt-0.5">社團團康互動手札</p>
+        </div>
+      </button>
+
+      <!-- 右側狀態與功能鍵 -->
+      <div class="flex items-center gap-2">
+        <!-- 連線狀態小型徽章（不阻擋操作） -->
+        <span id="connectionBadge" class="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full bg-white border border-[#E7DEC8] text-inkLight">
+          <span id="connectionDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="connectionText">連線中</span>
+        </span>
+
+        <!-- 音效開關 -->
+        <button id="soundToggleBtn" type="button" title="切換音效" class="w-9 h-9 rounded-xl bg-white border border-[#E7DEC8] text-inkLight hover:text-ink hover:bg-orange-50 transition-colors flex items-center justify-center text-sm">
+          🔊
+        </button>
+
+        <!-- 離開房間 -->
+        <button id="leaveRoomBtn" type="button" class="hidden text-xs font-bold px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-colors">
+          離開房間
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 主內容區 ==================== -->
+  <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-6 pb-16">
+
+    <!-- ==================== VIEW 1: 首頁（秒開即用，不卡載入） ==================== -->
+    <section id="viewHome" class="max-w-4xl mx-auto space-y-6 animate-pop-in">
+      <!-- 歡迎手札橫幅 -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-journal border border-[#EAE0CC] relative overflow-hidden">
+        <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-indigo-100/70 blur-2xl pointer-events-none"></div>
+        <div class="absolute -left-10 -bottom-10 w-44 h-44 rounded-full bg-orange-100/70 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 text-center max-w-2xl mx-auto space-y-2.5">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100/90 text-amber-900 text-xs font-black">
+            <span>⚔️</span> 靛藍 A 組 vs 暖橘 B 組・社團破冰神作製造機
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-black text-ink tracking-tight font-serif">
+            同一個開頭，哪一組能寫出最狂神展開？
+          </h2>
+          <p class="text-sm sm:text-base text-inkLight leading-relaxed">
+            房主統一出題與控場，兩組各自接龍互不劇透，最後同步揭曉兩本完整故事書！
+          </p>
+        </div>
+
+        <div class="relative z-10 mt-5 bg-orange-50/90 border-2 border-dashed border-orange-300 rounded-2xl p-3 flex items-center justify-center gap-2 text-center">
+          <span class="text-lg shrink-0">📜</span>
+          <p class="text-xs sm:text-sm font-bold text-orange-950">
+            鐵則：每人輪流接一句話（預設限 10 字內），<span class="underline decoration-teamB decoration-2 underline-offset-2">絕對不能推翻前人的設定！</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- URL 掃碼自動帶入橫幅 -->
+      <div id="qrAutoJoinNotice" class="hidden bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 flex items-center gap-3 animate-pop-in">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 text-lg">📱</div>
+        <div>
+          <div class="text-sm font-black text-emerald-950">已偵測到邀請房號！</div>
+          <div class="text-xs text-emerald-800 font-medium">已為你自動填入房號，輸入暱稱並選擇 A 組或 B 組即可入座。</div>
+        </div>
+      </div>
+
+      <!-- 雙模式頁籤切換：線上連線 vs 現場單機 -->
+      <div class="bg-white p-1.5 rounded-2xl shadow-sm border border-[#EAE0CC] grid grid-cols-2 gap-1.5 max-w-lg mx-auto">
+        <button id="homeTabOnline" type="button" class="btn-journal py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black bg-teamA text-white shadow-sm">
+          🌐 線上連線模式
+        </button>
+        <button id="homeTabLocal" type="button" class="btn-journal py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black text-inkLight hover:bg-[#FAF6EE]">
+          🎪 現場單機模式（免連線）
+        </button>
+      </div>
+
+      <!-- ========== 首頁面板 A：線上連線模式 ========== -->
+      <div id="homeOnlinePanel" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- 線上：我是房主・建立房間 -->
+        <div class="bg-white rounded-3xl p-6 shadow-journal border border-[#EAE0CC] flex flex-col justify-between space-y-4">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teamALight text-teamA text-xs font-black border border-indigo-200">
+                👑 房主／主持人
+              </span>
+              <span class="text-[11px] font-bold text-inkLight">支援 QR Code 投影</span>
+            </div>
+            <h3 class="text-xl font-black text-ink">我是房主・建立房間</h3>
+            <p class="text-xs text-inkLight">設定每組人數上限與規則，統一出題並掌握全場節奏。</p>
+          </div>
+
+          <div class="space-y-3.5">
+            <!-- 房主暱稱 -->
+            <div>
+              <label for="hostNicknameInput" class="block text-xs font-bold text-inkLight mb-1">房主暱稱</label>
+              <input id="hostNicknameInput" type="text" maxlength="12" value="社長" placeholder="例如：社長、活動長..."
+                class="w-full px-4 py-2.5 rounded-2xl bg-[#FAF6EE] border-2 border-[#E2D6C0] text-sm font-bold text-ink focus:outline-none focus:border-teamA transition" />
+            </div>
+
+            <!-- 每組人數上限 -->
+            <div class="bg-[#FAF6EE] rounded-2xl p-3.5 border border-[#EAE0CC] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="onlineMaxPerTeam" class="text-xs font-bold text-ink">每組人數上限</label>
+                <span class="text-sm font-black text-teamA"><span id="onlineMaxPerTeamVal">5</span> 人／組</span>
+              </div>
+              <input id="onlineMaxPerTeam" type="range" min="2" max="15" value="5" class="w-full accent-indigo-700 cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-inkLight font-medium">
+                <span>2 人</span>
+                <span>5 人（推薦）</span>
+                <span>15 人</span>
+              </div>
+            </div>
+
+            <!-- 每句字數限制 -->
+            <div>
+              <label class="block text-xs font-bold text-inkLight mb-1.5">每句字數上限</label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-group="onlineChars" data-val="10" class="opt-btn py-2 rounded-xl text-xs font-bold border bg-teamB text-white border-teamB">10 字內</button>
+                <button type="button" data-group="onlineChars" data-val="15" class="opt-btn py-2 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">15 字內</button>
+                <button type="button" data-group="onlineChars" data-val="20" class="opt-btn py-2 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">20 字內</button>
+                <button type="button" data-group="onlineChars" data-val="0" class="opt-btn py-2 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">不限</button>
+              </div>
+            </div>
+
+            <!-- 接龍模式 -->
+            <div>
+              <label class="block text-xs font-bold text-inkLight mb-1.5">組內接龍模式</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button type="button" data-group="onlineTurn" data-val="sequential" class="opt-btn p-2.5 rounded-xl text-left border bg-teamA text-white border-teamA">
+                  <div class="text-xs font-black">🔄 依序輪流</div>
+                  <div class="text-[10px] opacity-85">照順序一人一句</div>
+                </button>
+                <button type="button" data-group="onlineTurn" data-val="free" class="opt-btn p-2.5 rounded-xl text-left border bg-[#FAF6EE] text-ink border-[#E2D6C0]">
+                  <div class="text-xs font-black">⚡ 自由接龍</div>
+                  <div class="text-[10px] opacity-75">有靈感就發（不可連發）</div>
+                </button>
+              </div>
+            </div>
+
+            <button id="createOnlineRoomBtn" type="button" class="btn-journal w-full py-3.5 px-4 rounded-2xl bg-teamA hover:bg-indigo-800 text-white font-black text-sm shadow-md shadow-indigo-200 flex items-center justify-center gap-2">
+              <span>✨ 建立房間並產生 QR Code</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 線上：我是組員・加入房間 -->
+        <div id="joinCard" class="bg-white rounded-3xl p-6 shadow-journal border border-[#EAE0CC] flex flex-col justify-between space-y-4">
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-teamBLight text-teamB text-xs font-black border border-orange-200">
+                📱 社團組員入口
+              </span>
+              <span class="text-[11px] font-bold text-inkLight">掃碼自動帶入房號</span>
+            </div>
+            <h3 class="text-xl font-black text-ink">我是組員・加入房間</h3>
+            <p class="text-xs text-inkLight">輸入 5 碼房號與暱稱，挑選你要效力的陣營！</p>
+          </div>
+
+          <div class="space-y-3.5">
+            <!-- 房號輸入 -->
+            <div>
+              <label for="joinRoomCodeInput" class="block text-xs font-bold text-inkLight mb-1">房間代碼（5 碼英數）</label>
+              <div class="flex gap-2">
+                <input id="joinRoomCodeInput" type="text" maxlength="5" placeholder="例如：AB23C"
+                  class="flex-1 uppercase tracking-[0.22em] text-center px-4 py-2.5 rounded-2xl bg-[#FAF6EE] border-2 border-[#E2D6C0] text-base font-black text-ink placeholder:font-normal placeholder:tracking-normal placeholder:text-[#A89E8E] focus:outline-none focus:border-teamB transition" />
+                <button id="checkRoomBtn" type="button" class="btn-journal px-3.5 py-2 rounded-2xl bg-[#FAF6EE] hover:bg-[#EAE0CC] border border-[#E2D6C0] text-xs font-bold text-ink shrink-0">
+                  查詢人數
+                </button>
+              </div>
+              <p id="joinRoomLookupHint" class="text-[11px] font-bold mt-1.5 min-h-[16px] text-inkLight"></p>
+            </div>
+
+            <!-- 組員暱稱 -->
+            <div>
+              <label for="joinNicknameInput" class="block text-xs font-bold text-inkLight mb-1">你的暱稱</label>
+              <input id="joinNicknameInput" type="text" maxlength="12" placeholder="例如：吉他社小王、攝影社阿花..."
+                class="w-full px-4 py-2.5 rounded-2xl bg-[#FAF6EE] border-2 border-[#E2D6C0] text-sm font-bold text-ink placeholder:font-normal placeholder:text-[#A89E8E] focus:outline-none focus:border-teamB transition" />
+            </div>
+
+            <!-- 選擇 A 組 / B 組 -->
+            <div>
+              <label class="block text-xs font-bold text-inkLight mb-1.5">選擇加入組別</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <button type="button" id="pickTeamABtn" data-team="A"
+                  class="btn-journal p-3 rounded-2xl border-2 text-left transition border-teamA bg-teamALight">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-black text-sm text-teamA">🔵 A 組</span>
+                    <span id="lookupCountA" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-teamA border border-indigo-200">靛藍隊</span>
+                  </div>
+                  <div id="lookupStatusA" class="text-[11px] text-indigo-800/80 font-medium mt-1">點擊選擇 A 組</div>
+                </button>
+
+                <button type="button" id="pickTeamBBtn" data-team="B"
+                  class="btn-journal p-3 rounded-2xl border-2 text-left transition border-[#E2D6C0] bg-[#FAF6EE]">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="font-black text-sm text-teamB">🟠 B 組</span>
+                    <span id="lookupCountB" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-white text-teamB border border-orange-200">暖橘隊</span>
+                  </div>
+                  <div id="lookupStatusB" class="text-[11px] text-orange-800/80 font-medium mt-1">點擊選擇 B 組</div>
+                </button>
+              </div>
+            </div>
+
+            <button id="joinOnlineRoomBtn" type="button" class="btn-journal w-full py-3.5 px-4 rounded-2xl bg-teamB hover:bg-orange-700 text-white font-black text-sm shadow-md shadow-orange-200 flex items-center justify-center gap-2">
+              <span>🚀 加入房間等待開局</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== 首頁面板 B：現場單機模式（免連線隨時可玩） ========== -->
+      <div id="homeLocalPanel" class="hidden max-w-2xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-journal border-2 border-orange-200 space-y-5">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-black border border-emerald-200">
+                🎪 免網路・保證隨時可玩
+              </span>
+              <h3 class="text-xl sm:text-2xl font-black text-ink mt-2">現場單機對決模式</h3>
+              <p class="text-xs sm:text-sm text-inkLight mt-1">適合社辦投影、大螢幕團康或大家輪流傳手機！同樣支援 A/B 兩組分隊、房主統一出題與雙繪本結算。</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 單機每組人數上限 -->
+            <div class="bg-[#FAF6EE] rounded-2xl p-3.5 border border-[#EAE0CC] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <label for="localMaxPerTeam" class="text-xs font-bold text-ink">每組人數上限</label>
+                <span class="text-sm font-black text-teamB"><span id="localMaxPerTeamVal">5</span> 人／組</span>
+              </div>
+              <input id="localMaxPerTeam" type="range" min="2" max="15" value="5" class="w-full accent-orange-600 cursor-pointer" />
+            </div>
+
+            <!-- 單機字數上限 -->
+            <div class="space-y-1.5">
+              <label class="block text-xs font-bold text-inkLight">每句字數上限</label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button type="button" data-group="localChars" data-val="10" class="opt-btn py-2.5 rounded-xl text-xs font-bold border bg-teamB text-white border-teamB">10字</button>
+                <button type="button" data-group="localChars" data-val="15" class="opt-btn py-2.5 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">15字</button>
+                <button type="button" data-group="localChars" data-val="20" class="opt-btn py-2.5 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">20字</button>
+                <button type="button" data-group="localChars" data-val="0" class="opt-btn py-2.5 rounded-xl text-xs font-bold border bg-[#FAF6EE] text-inkLight border-[#E2D6C0]">不限</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-inkLight">組內接龍模式</label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" data-group="localTurn" data-val="sequential" class="opt-btn p-3 rounded-xl text-left border bg-teamA text-white border-teamA">
+                <div class="text-xs font-black">🔄 依序輪流</div>
+                <div class="text-[10px] opacity-85">照名單順序一人一句</div>
+              </button>
+              <button type="button" data-group="localTurn" data-val="free" class="opt-btn p-3 rounded-xl text-left border bg-[#FAF6EE] text-ink border-[#E2D6C0]">
+                <div class="text-xs font-black">⚡ 自由搶答</div>
+                <div class="text-[10px] opacity-75">有靈感就接（不可連發）</div>
+              </button>
+            </div>
+          </div>
+
+          <button id="startLocalLobbyBtn" type="button" class="btn-journal w-full py-4 rounded-2xl bg-gradient-to-r from-teamB to-amber-500 hover:from-orange-700 hover:to-amber-600 text-white font-black text-base shadow-lg shadow-orange-200">
+            🎪 立即進入單機大廳
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 2: 大廳等待與出題畫面 (Lobby) ==================== -->
+    <section id="viewLobby" class="hidden space-y-5 animate-pop-in">
+
+      <!-- 頂部：線上模式 QR Code 卡片（單機模式改顯示精簡橫幅） -->
+      <div id="lobbyOnlineQrCard" class="bg-white rounded-3xl p-5 sm:p-6 shadow-journal border border-[#EAE0CC] grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
+        <!-- QR Code 圖片（免外部 JS 套件，純 img + onerror 降級） -->
+        <div class="md:col-span-4 flex flex-col items-center justify-center">
+          <div class="bg-white p-3 rounded-2xl border-2 border-[#EAE0CC] shadow-sm inline-flex items-center justify-center w-[176px] h-[176px]">
+            <img id="lobbyQrImg" src="" alt="掃描加入房間 QR Code" class="w-full h-full object-contain rounded-lg" />
+            <div id="lobbyQrFallback" class="hidden text-center p-2">
+              <div class="text-[11px] font-bold text-inkLight">QR 載入失敗，請輸入房號</div>
+              <div id="lobbyQrFallbackCode" class="text-3xl font-black font-mono tracking-widest text-teamA mt-1">-----</div>
+            </div>
+          </div>
+          <button id="openQrModalBtn" type="button" class="btn-journal mt-2.5 inline-flex items-center gap-1.5 text-xs font-bold px-3.5 py-1.5 rounded-xl bg-teamALight hover:bg-indigo-100 text-teamA border border-indigo-200">
+            🔍 放大投影 QR Code
+          </button>
+        </div>
+
+        <!-- 房號、邀請連結與分享網址更新框 -->
+        <div class="md:col-span-8 space-y-3.5 text-center md:text-left">
+          <div class="flex flex-wrap items-center justify-center md:justify-between gap-3">
+            <div>
+              <span class="text-xs font-bold text-inkLight">房間代碼（掃碼或輸入 5 碼加入）</span>
+              <div id="lobbyRoomCodeText" class="text-4xl sm:text-5xl font-black font-mono tracking-[0.22em] text-ink mt-0.5">-----</div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-2">
+              <button id="copyInviteLinkBtn" type="button" class="btn-journal px-4 py-2.5 rounded-2xl bg-teamA hover:bg-indigo-800 text-white text-xs font-bold shadow-sm">
+                🔗 複製邀請連結
+              </button>
+              <button id="copyRoomCodeBtn" type="button" class="btn-journal px-3.5 py-2.5 rounded-2xl bg-[#FAF6EE] hover:bg-[#EAE0CC] text-ink border border-[#DCD0BA] text-xs font-bold">
+                📋 複製房號
+              </button>
+            </div>
+          </div>
+
+          <!-- 規則標籤 -->
+          <div id="lobbyRulePills" class="flex flex-wrap items-center justify-center md:justify-start gap-2 text-xs"></div>
+
+          <!-- 沙盒環境提示與「貼上分享網址以更新 QR Code」輸入框（僅房主顯示） -->
+          <div id="customQrUrlBox" class="hidden bg-[#FAF6EE] rounded-2xl p-3 border border-[#EAE0CC] text-left space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <label for="customShareUrlInput" class="text-[11px] font-black text-inkLight">🔧 貼上分享網址以更新 QR Code（預覽模式適用）</label>
+              <span id="sandboxNoticeTag" class="hidden text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">偵測到預覽沙盒</span>
+            </div>
+            <div class="flex gap-2">
+              <input id="customShareUrlInput" type="url" placeholder="貼上你部署後的網頁網址，將自動附加 ?room=房號..."
+                class="flex-1 px-3 py-1.5 rounded-xl bg-white border border-[#DCD0BA] text-xs font-medium text-ink focus:outline-none focus:border-teamA" />
+              <button id="applyCustomQrUrlBtn" type="button" class="btn-journal px-3 py-1.5 rounded-xl bg-teamA text-white text-xs font-bold shrink-0">更新 QR</button>
+            </div>
+          </div>
+
+          <!-- 組員等待提示（非房主顯示） -->
+          <div id="memberLobbyWaitBox" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-3.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2 text-left">
+              <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping shrink-0"></span>
+              <div class="text-xs sm:text-sm font-bold text-amber-950">
+                你目前在 <span id="memberMyTeamLabel" class="underline"></span>，等待房主統一出題開戰...
+              </div>
+            </div>
+            <button id="memberSwitchOwnTeamBtn" type="button" class="btn-journal text-xs font-bold px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 hover:bg-amber-100">
+              切換組別
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 單機模式大廳頂部橫幅 -->
+      <div id="lobbyLocalHeaderCard" class="hidden bg-white rounded-3xl p-5 shadow-journal border-2 border-orange-200 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <span class="text-xs font-black px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">🎪 現場單機模式</span>
+          <h2 class="text-xl font-black text-ink mt-1">請設定兩組名單與開頭題目</h2>
+        </div>
+        <div id="lobbyLocalRulePills" class="flex flex-wrap gap-2 text-xs"></div>
+      </div>
+
+      <!-- 房主快捷工具列（加入測試組員） -->
+      <div id="hostLobbyQuickBar" class="hidden flex flex-wrap items-center justify-between gap-2 bg-white/90 rounded-2xl px-4 py-3 border border-[#EAE0CC]">
+        <div class="text-xs font-bold text-inkLight">💡 還沒找齊社團夥伴嗎？可以先加入測試組員體驗完整兩組對決流程：</div>
+        <button id="addTestPlayersBtn" type="button" class="btn-journal px-3.5 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-black">
+          🧪 加入測試組員（快速試玩）
+        </button>
+      </div>
+
+      <!-- 中段：A 組 & B 組名單 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <!-- A 組（靛藍隊） -->
+        <div class="bg-white rounded-3xl p-5 shadow-journal border-2 border-indigo-200 flex flex-col space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-indigo-100">
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-teamA"></span>
+              <h3 class="text-lg font-black text-teamA">A 組（靛藍隊）</h3>
+            </div>
+            <span id="lobbyTeamACount" class="text-xs font-black px-3 py-1 rounded-full bg-teamALight text-teamA border border-indigo-200">0 / 5 人</span>
+          </div>
+
+          <!-- 單機模式：快速新增 A 組組員 -->
+          <form id="localAddAForm" class="hidden flex gap-2">
+            <input id="localAddAInput" type="text" maxlength="12" placeholder="輸入 A 組隊員暱稱..."
+              class="flex-1 px-3.5 py-2 rounded-xl bg-[#FAF6EE] border border-[#DCD0BA] text-xs font-bold text-ink focus:outline-none focus:border-teamA" />
+            <button type="submit" class="btn-journal px-3.5 py-2 rounded-xl bg-teamA text-white text-xs font-black shrink-0">+ 加入 A 組</button>
+          </form>
+
+          <ul id="lobbyTeamAList" class="space-y-2 flex-1 min-h-[110px]"></ul>
+        </div>
+
+        <!-- B 組（暖橘隊） -->
+        <div class="bg-white rounded-3xl p-5 shadow-journal border-2 border-orange-200 flex flex-col space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-orange-100">
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-3.5 rounded-full bg-teamB"></span>
+              <h3 class="text-lg font-black text-teamB">B 組（暖橘隊）</h3>
+            </div>
+            <span id="lobbyTeamBCount" class="text-xs font-black px-3 py-1 rounded-full bg-teamBLight text-teamB border border-orange-200">0 / 5 人</span>
+          </div>
+
+          <!-- 單機模式：快速新增 B 組組員 -->
+          <form id="localAddBForm" class="hidden flex gap-2">
+            <input id="localAddBInput" type="text" maxlength="12" placeholder="輸入 B 組隊員暱稱..."
+              class="flex-1 px-3.5 py-2 rounded-xl bg-[#FAF6EE] border border-[#DCD0BA] text-xs font-bold text-ink focus:outline-none focus:border-teamB" />
+            <button type="submit" class="btn-journal px-3.5 py-2 rounded-xl bg-teamB text-white text-xs font-black shrink-0">+ 加入 B 組</button>
+          </form>
+
+          <ul id="lobbyTeamBList" class="space-y-2 flex-1 min-h-[110px]"></ul>
+        </div>
+      </div>
+
+      <!-- 下段：房主統一出題與開局控制台 -->
+      <div id="hostPromptControlPanel" class="hidden bg-white rounded-3xl p-5 sm:p-6 shadow-journal border-2 border-orange-200 space-y-5">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-black text-ink">🪄 房主統一出題與開局控制</h3>
+            <p class="text-xs text-inkLight">按下統一開始後，A／B 兩組將同步進入故事接龍畫面</p>
+          </div>
+
+          <!-- 切換：兩組共用同題 vs 各自不同題 -->
+          <label class="inline-flex items-center gap-2.5 cursor-pointer bg-[#FAF6EE] px-3.5 py-2 rounded-2xl border border-[#EAE0CC] select-none">
+            <span class="text-xs font-bold text-ink">兩組共用同題</span>
+            <div class="relative">
+              <input type="checkbox" id="toggleDifferentPrompts" class="sr-only peer" />
+              <div class="w-10 h-5 bg-teamA rounded-full peer peer-checked:bg-teamB transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+            </div>
+            <span class="text-xs font-bold text-inkLight">各自不同題</span>
+          </label>
+        </div>
+
+        <!-- 題目輸入區（共用或 A 組） -->
+        <div class="space-y-3">
+          <div class="bg-[#FAF6EE] rounded-2xl p-4 border border-[#EAE0CC] space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label id="promptALabel" for="hostPromptAInput" class="text-xs font-black text-ink">📖 統一故事開頭第一句（A／B 兩組共用）</label>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-target="A" data-cat="社團崩壞" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200">🔥 社團崩壞</button>
+                <button type="button" data-target="A" data-cat="校園奇幻" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-teamALight text-teamA hover:bg-indigo-100 border border-indigo-200">🪄 校園奇幻</button>
+                <button type="button" data-target="A" data-cat="懸疑推理" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200">🔍 懸疑推理</button>
+                <button type="button" data-target="A" data-cat="無厘頭日常" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200">🤪 無厘頭</button>
+              </div>
+            </div>
+            <input id="hostPromptAInput" type="text" maxlength="60" placeholder="點上方分類一鍵隨機抽題，或直接自訂故事開頭..."
+              class="w-full px-4 py-3 rounded-xl bg-white border border-[#DCD0BA] text-sm font-bold text-ink focus:outline-none focus:border-teamA" />
+          </div>
+
+          <!-- B 組獨立題目區（開啟各自不同題時顯示） -->
+          <div id="promptBBox" class="hidden bg-teamBLight/70 rounded-2xl p-4 border border-orange-200 space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <label for="hostPromptBInput" class="text-xs font-black text-teamB">🟠 B 組專屬故事開頭第一句</label>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-target="B" data-cat="社團崩壞" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white text-rose-700 hover:bg-rose-100 border border-rose-200">🔥 社團崩壞</button>
+                <button type="button" data-target="B" data-cat="校園奇幻" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white text-teamA hover:bg-indigo-100 border border-indigo-200">🪄 校園奇幻</button>
+                <button type="button" data-target="B" data-cat="懸疑推理" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white text-slate-700 hover:bg-slate-200 border border-slate-200">🔍 懸疑推理</button>
+                <button type="button" data-target="B" data-cat="無厘頭日常" class="draw-prompt-btn text-[11px] font-bold px-2.5 py-1 rounded-xl bg-white text-amber-800 hover:bg-amber-100 border border-amber-200">🤪 無厘頭</button>
+              </div>
+            </div>
+            <input id="hostPromptBInput" type="text" maxlength="60" placeholder="點上方分類一鍵抽題，或自訂 B 組開頭..."
+              class="w-full px-4 py-3 rounded-xl bg-white border border-orange-200 text-sm font-bold text-ink focus:outline-none focus:border-teamB" />
+          </div>
+        </div>
+
+        <!-- 統一開始遊戲按鈕 -->
+        <button id="hostStartGameBtn" type="button" class="btn-journal w-full py-4 rounded-2xl bg-gradient-to-r from-teamA to-teamB hover:opacity-95 text-white font-black text-base shadow-lg disabled:opacity-45 disabled:cursor-not-allowed">
+          🚀 統一開始遊戲（兩組同步開戰！）
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3A: 房主上帝視角（含單機雙組接龍 & 測試模擬） ==================== -->
+    <section id="viewHostPlaying" class="hidden space-y-5 animate-pop-in">
+      <!-- 頂部控制列 -->
+      <div class="bg-white rounded-3xl p-4 sm:p-5 shadow-journal border border-[#EAE0CC] flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 text-lg">📺</div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h2 id="hostPlayingTitle" class="text-base sm:text-lg font-black text-ink">房主即時監控台</h2>
+              <span id="hostPlayRoomTag" class="text-xs font-mono font-bold px-2 py-0.5 rounded-lg bg-[#FAF6EE] border border-[#EAE0CC] text-inkLight"></span>
+              <span id="hostCharRulePill" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-orange-50 text-teamB border border-orange-200">限 10 字內</span>
+            </div>
+            <p class="text-xs text-inkLight mt-0.5">📜 規則提醒：每人輪流接一句，絕對不能推翻前人設定！</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- 防劇透遮罩開關 -->
+          <label class="inline-flex items-center gap-2 cursor-pointer bg-[#FAF6EE] px-3.5 py-2 rounded-2xl border border-[#EAE0CC] select-none">
+            <span class="text-xs font-bold text-ink">👁️ 隱藏內容防劇透</span>
+            <div class="relative">
+              <input type="checkbox" id="toggleSpoilerShield" class="sr-only peer" />
+              <div class="w-10 h-5 bg-[#D6CBB8] rounded-full peer peer-checked:bg-teamA transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+            </div>
+          </label>
+
+          <!-- 結束接龍按鈕 -->
+          <button id="hostEndGameBtn" type="button" class="btn-journal px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs sm:text-sm shadow-md">
+            🏁 結束接龍・揭曉兩組故事
+          </button>
+        </div>
+      </div>
+
+      <!-- 雙欄分割：A 組 vs B 組 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- A 組監控／接龍欄 -->
+        <div class="bg-white rounded-3xl p-5 shadow-journal border-2 border-indigo-200 flex flex-col space-y-3.5">
+          <div class="flex items-center justify-between gap-2 pb-3 border-b border-indigo-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-teamA"></span>
+                <h3 class="text-lg font-black text-teamA">A 組（靛藍隊）</h3>
+              </div>
+              <div id="hostTeamATurnInfo" class="text-xs font-bold text-inkLight mt-1">輪到：--</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" data-skip-team="A" class="host-skip-btn btn-journal text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
+                ⏭️ 跳過輪次
+              </button>
+              <span id="hostTeamACountBadge" class="text-xs sm:text-sm font-black px-3 py-1 rounded-2xl bg-teamA text-white">0 句</span>
+            </div>
+          </div>
+
+          <div class="bg-teamALight/80 rounded-2xl p-3 border border-indigo-100 space-y-1">
+            <div class="text-[11px] font-black text-teamA">📖 開頭題目</div>
+            <div id="hostTeamAPromptText" class="text-xs sm:text-sm font-bold text-ink"></div>
+            <div id="hostTeamAReactionSum" class="flex items-center gap-3 text-xs font-bold text-inkLight pt-1"></div>
+          </div>
+
+          <div id="hostTeamAFeed" class="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 flex-1"></div>
+
+          <!-- 單機模式 或 測試組員模擬發言區 (A 組) -->
+          <div id="hostSimBoxA" class="hidden pt-3 border-t border-indigo-100 space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span id="hostSimLabelA" class="font-black text-teamA">✍️ 輪到發言</span>
+              <span id="hostSimCounterA" class="font-mono font-bold text-inkLight">0 / 10 字</span>
+            </div>
+            <form id="hostSimFormA" class="flex gap-2">
+              <input id="hostSimInputA" type="text" autocomplete="off" placeholder="輸入 A 組接龍句子..."
+                class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border-2 border-indigo-200 text-sm font-bold text-ink focus:outline-none focus:border-teamA" />
+              <button id="hostSimBtnA" type="submit" class="btn-journal px-4 py-2.5 rounded-xl bg-teamA hover:bg-indigo-800 disabled:bg-gray-300 text-white text-xs font-black shrink-0">送出</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- B 組監控／接龍欄 -->
+        <div class="bg-white rounded-3xl p-5 shadow-journal border-2 border-orange-200 flex flex-col space-y-3.5">
+          <div class="flex items-center justify-between gap-2 pb-3 border-b border-orange-100">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-teamB"></span>
+                <h3 class="text-lg font-black text-teamB">B 組（暖橘隊）</h3>
+              </div>
+              <div id="hostTeamBTurnInfo" class="text-xs font-bold text-inkLight mt-1">輪到：--</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" data-skip-team="B" class="host-skip-btn btn-journal text-[11px] font-bold px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200">
+                ⏭️ 跳過輪次
+              </button>
+              <span id="hostTeamBCountBadge" class="text-xs sm:text-sm font-black px-3 py-1 rounded-2xl bg-teamB text-white">0 句</span>
+            </div>
+          </div>
+
+          <div class="bg-teamBLight/80 rounded-2xl p-3 border border-orange-100 space-y-1">
+            <div class="text-[11px] font-black text-teamB">📖 開頭題目</div>
+            <div id="hostTeamBPromptText" class="text-xs sm:text-sm font-bold text-ink"></div>
+            <div id="hostTeamBReactionSum" class="flex items-center gap-3 text-xs font-bold text-inkLight pt-1"></div>
+          </div>
+
+          <div id="hostTeamBFeed" class="space-y-2.5 max-h-[360px] overflow-y-auto pr-1 flex-1"></div>
+
+          <!-- 單機模式 或 測試組員模擬發言區 (B 組) -->
+          <div id="hostSimBoxB" class="hidden pt-3 border-t border-orange-100 space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span id="hostSimLabelB" class="font-black text-teamB">✍️ 輪到發言</span>
+              <span id="hostSimCounterB" class="font-mono font-bold text-inkLight">0 / 10 字</span>
+            </div>
+            <form id="hostSimFormB" class="flex gap-2">
+              <input id="hostSimInputB" type="text" autocomplete="off" placeholder="輸入 B 組接龍句子..."
+                class="flex-1 px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border-2 border-orange-200 text-sm font-bold text-ink focus:outline-none focus:border-teamB" />
+              <button id="hostSimBtnB" type="submit" class="btn-journal px-4 py-2.5 rounded-xl bg-teamB hover:bg-orange-700 disabled:bg-gray-300 text-white text-xs font-black shrink-0">送出</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3B: 線上組員專注接龍視角 ==================== -->
+    <section id="viewMemberPlaying" class="hidden max-w-3xl mx-auto space-y-4 animate-pop-in pb-44 sm:pb-40">
+      <div id="memberTopCard" class="bg-white rounded-3xl p-4 shadow-journal border-2 border-indigo-200 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span id="memberTeamBadge" class="text-xs font-black px-3 py-1 rounded-full text-white bg-teamA">🔵 A 組（靛藍隊）</span>
+            <span id="memberSentenceCountBadge" class="text-xs font-black px-2.5 py-1 rounded-full bg-[#FAF6EE] text-ink border border-[#EAE0CC]">已接 0 句</span>
+            <span id="memberCharRuleBadge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-orange-50 text-teamB border border-orange-200">限 10 字內</span>
+          </div>
+          <span class="text-[11px] font-bold text-inkLight">🔒 敵隊內容保密中</span>
+        </div>
+        <div id="memberPlayersStrip" class="flex items-center gap-2 overflow-x-auto py-1"></div>
+      </div>
+
+      <div id="memberStoryFeed" class="space-y-3"></div>
+    </section>
+
+    <!-- ==================== VIEW 4: 故事繪本大對決結算畫面 ==================== -->
+    <section id="viewFinished" class="hidden space-y-6 animate-pop-in">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-black">
+          🏆 故事殺青！兩組繪本正式揭曉
+        </div>
+        <h2 class="text-2xl sm:text-4xl font-black text-ink font-serif">故事繪本大對決</h2>
+        <p class="text-xs sm:text-sm text-inkLight">看看靛藍 A 組與暖橘 B 組各自把故事帶往哪個平行宇宙！</p>
+      </div>
+
+      <!-- 結算工具列 -->
+      <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-[#EAE0CC] flex flex-wrap items-center justify-between gap-3">
+        <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+          <div class="relative">
+            <input type="checkbox" id="toggleAuthorTags" class="sr-only peer" />
+            <div class="w-11 h-6 bg-[#E2D6C0] rounded-full peer peer-checked:bg-teamB transition-colors"></div>
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+          </div>
+          <span class="text-xs sm:text-sm font-bold text-ink">顯示作者標記</span>
+        </label>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button id="copyBothStoriesBtn" type="button" class="btn-journal px-3.5 py-2 rounded-xl bg-teamA hover:bg-indigo-800 text-white text-xs font-bold shadow-sm">
+            📋 複製兩組完整故事
+          </button>
+          <button id="downloadBothTxtBtn" type="button" class="btn-journal px-3.5 py-2 rounded-xl bg-[#FAF6EE] hover:bg-[#EAE0CC] text-ink border border-[#DCD0BA] text-xs font-bold">
+            📥 下載 .txt
+          </button>
+          <button id="hostNextRoundBtn" type="button" class="hidden btn-journal px-4 py-2 rounded-xl bg-teamB hover:bg-orange-700 text-white text-xs font-black shadow-sm">
+            🔄 原班人馬再來一題
+          </button>
+        </div>
+      </div>
+
+      <!-- 手機版 A/B 組故事書切換頁籤 -->
+      <div class="grid grid-cols-2 gap-2 md:hidden bg-white p-1.5 rounded-2xl border border-[#EAE0CC]">
+        <button id="mobileTabA" type="button" class="py-2.5 rounded-xl text-xs font-black bg-teamA text-white transition">🔵 A 組故事書</button>
+        <button id="mobileTabB" type="button" class="py-2.5 rounded-xl text-xs font-black text-inkLight hover:bg-[#FAF6EE] transition">🟠 B 組故事書</button>
+      </div>
+
+      <!-- 雙繪本並排對決 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- A 組繪本 -->
+        <article id="bookPanelA" class="storybook-page rounded-3xl p-6 sm:p-8 shadow-book border-2 border-indigo-200 relative overflow-hidden flex flex-col">
+          <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-indigo-400/50 to-transparent"></div>
+          <div class="border-b-2 border-double border-indigo-200 pb-4 mb-5 space-y-2 text-center">
+            <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-teamALight text-teamA text-xs font-black border border-indigo-200">🔵 A 組（靛藍隊）</span>
+            <h3 class="text-xl sm:text-2xl font-black font-serif text-ink">A 組共創故事</h3>
+            <p id="bookAuthorsA" class="text-xs text-inkLight font-medium"></p>
+            <div id="bookReactionsA" class="flex items-center justify-center flex-wrap gap-2 pt-1 text-xs font-bold"></div>
+          </div>
+          <div id="bookContentA" class="font-serif text-base leading-[2.35rem] text-ink space-y-3 flex-1"></div>
+          <div class="mt-8 pt-3 border-t border-[#EAE0CC] flex justify-between text-xs text-inkLight font-serif">
+            <span>— A 組全文完 —</span>
+            <span id="bookStatsA"></span>
+          </div>
+        </article>
+
+        <!-- B 組繪本 -->
+        <article id="bookPanelB" class="hidden md:flex storybook-page rounded-3xl p-6 sm:p-8 shadow-book border-2 border-orange-200 relative overflow-hidden flex-col">
+          <div class="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-r from-orange-400/50 to-transparent"></div>
+          <div class="border-b-2 border-double border-orange-200 pb-4 mb-5 space-y-2 text-center">
+            <span class="inline-flex items-center gap-1 px-3 py-0.5 rounded-full bg-teamBLight text-teamB text-xs font-black border border-orange-200">🟠 B 組（暖橘隊）</span>
+            <h3 class="text-xl sm:text-2xl font-black font-serif text-ink">B 組共創故事</h3>
+            <p id="bookAuthorsB" class="text-xs text-inkLight font-medium"></p>
+            <div id="bookReactionsB" class="flex items-center justify-center flex-wrap gap-2 pt-1 text-xs font-bold"></div>
+          </div>
+          <div id="bookContentB" class="font-serif text-base leading-[2.35rem] text-ink space-y-3 flex-1"></div>
+          <div class="mt-8 pt-3 border-t border-[#EAE0CC] flex justify-between text-xs text-inkLight font-serif">
+            <span>— B 組全文完 —</span>
+            <span id="bookStatsB"></span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== 線上組員底部固定輸入列 ==================== -->
+  <div id="memberBottomDock" class="hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-[#E7DEC8] shadow-[0_-6px_24px_rgba(44,40,36,0.08)]">
+    <div class="max-w-3xl mx-auto px-4 py-3 space-y-2">
+      <div class="flex items-center justify-between gap-2 text-xs bg-[#FAF6EE] px-3 py-1.5 rounded-xl border border-[#EAE0CC]">
+        <div class="truncate">
+          <span class="font-black text-teamB">上一句：</span>
+          <span id="memberPrevPreview" class="font-medium text-ink">...</span>
+        </div>
+        <span class="shrink-0 text-[11px] font-bold text-orange-900 hidden sm:inline">📜 不能推翻前人設定</span>
+      </div>
+
+      <div id="memberActiveInputBox" class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs px-1">
+          <div id="memberTurnLabel" class="font-black text-ink">✍️ 輪到你接下一句！（不可推翻前人設定）</div>
+          <div id="memberCharCounter" class="font-mono font-bold text-inkLight">0 / 10 字</div>
+        </div>
+        <form id="memberSentenceForm" class="flex gap-2">
+          <input id="memberSentenceInput" type="text" autocomplete="off" placeholder="輸入你的接龍句子..."
+            class="flex-1 px-4 py-3 rounded-2xl bg-[#FAF6EE] border-2 border-[#E2D6C0] text-sm sm:text-base font-bold text-ink placeholder:font-normal placeholder:text-[#A89E8E] focus:outline-none focus:border-teamB transition" />
+          <button id="memberSubmitBtn" type="submit"
+            class="btn-journal px-5 py-3 rounded-2xl bg-teamB hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-black text-sm shadow-sm shrink-0">
+            送出
+          </button>
+        </form>
+      </div>
+
+      <div id="memberWaitingBox" class="hidden py-3 px-4 rounded-2xl bg-[#FAF6EE] border border-[#EAE0CC] text-center">
+        <p id="memberWaitingText" class="text-sm font-bold text-inkLight flex items-center justify-center gap-2"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 放大投影 QR Code 全螢幕彈窗 ==================== -->
+  <div id="qrFullscreenModal" class="hidden fixed inset-0 z-50 bg-ink/75 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center space-y-5 animate-pop-in relative">
+      <button id="closeQrModalBtn" type="button" class="absolute right-4 top-4 w-9 h-9 rounded-xl bg-[#FAF6EE] hover:bg-[#EAE0CC] text-ink font-black">✕</button>
+      <div>
+        <span class="text-xs font-black px-3 py-1 rounded-full bg-orange-100 text-teamB">📱 社團夥伴掃碼參戰</span>
+        <h3 class="text-2xl font-black text-ink mt-2">掃描加入故事接龍</h3>
+      </div>
+      <div class="bg-white p-4 rounded-3xl border-4 border-[#EAE0CC] inline-flex items-center justify-center w-[264px] h-[264px] shadow-inner">
+        <img id="modalQrImg" src="" alt="大尺寸 QR Code" class="w-full h-full object-contain rounded-xl" />
+        <div id="modalQrFallback" class="hidden text-center">
+          <div class="text-xs font-bold text-inkLight">請直接輸入房號加入</div>
+          <div id="modalQrFallbackCode" class="text-4xl font-black font-mono tracking-widest text-teamA mt-2">-----</div>
+        </div>
+      </div>
+      <div class="bg-[#FAF6EE] rounded-2xl p-3 border border-[#EAE0CC]">
+        <div class="text-xs font-bold text-inkLight">或手動輸入 5 碼房號</div>
+        <div id="modalRoomCodeDisplay" class="text-4xl font-black font-mono tracking-[0.25em] text-teamA mt-0.5">-----</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 自訂確認視窗 Modal（取代原生 confirm/alert） ==================== -->
+  <div id="customModal" class="hidden fixed inset-0 z-50 bg-ink/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#EAE0CC] space-y-4 animate-pop-in">
+      <h3 id="modalTitle" class="text-lg font-black text-ink">確認操作</h3>
+      <p id="modalMessage" class="text-sm text-inkLight leading-relaxed"></p>
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="modalCancelBtn" type="button" class="btn-journal px-4 py-2.5 rounded-xl bg-[#FAF6EE] hover:bg-[#EAE0CC] text-ink font-bold text-xs">取消</button>
+        <button id="modalConfirmBtn" type="button" class="btn-journal px-4 py-2.5 rounded-xl bg-teamB hover:bg-orange-700 text-white font-bold text-xs">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== Toast 通知容器 ==================== -->
+  <div id="toastContainer" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2 pointer-events-none w-full max-w-xs px-4"></div>
+
+  <!-- ==================== 原生 ES Module 主程式（含 Firebase v11.6.1） ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // =========================================================================
+    // 1. 常數、配色與社團開頭題庫
+    // =========================================================================
+    const COLORS_A = ['#3730A3', '#2563EB', '#4F46E5', '#0284C7', '#0D9488', '#6366F1'];
+    const COLORS_B = ['#EA580C', '#D97706', '#E11D48', '#C2410C', '#B45309', '#F97316'];
+
+    const OPENING_PROMPTS = {
+      '社團崩壞': [
+        '社課開始前五分鐘，社長突然宣布社團經費全拿去買鹹酥雞了。',
+        '迎新茶會現場，學長一打開吉他盒竟跳出一隻生氣的橘貓。',
+        '成發前一天，我們發現舞台總召把流程表誤傳給了校長。',
+        '半夜十二點的社辦裡，白板上突然自己浮現了欠繳社費名單。',
+        '副社長信心滿滿端出親手做的社慶蛋糕，結果它居然在微微發光。'
+      ],
+      '校園奇幻': [
+        '圖書館地下室多了一扇沒見過的門，門牌寫著「期末歐趴交換所」。',
+        '下雨天的操場上，每個人踩過的水窪都倒映出完全不同的世界。',
+        '我撿到一支會自動寫筆記的紅筆，但它寫的都是明天的事情。',
+        '校狗阿福突然開口說人話，第一句竟是問我早餐有沒有加蛋。',
+        '福利社阿姨神祕地遞給我一瓶透明飲料，說喝了能聽見教授的心聲。'
+      ],
+      '懸疑推理': [
+        '停電三秒後燈光重亮，桌上的冠軍獎盃竟變成了一顆高麗菜。',
+        '每個人手機同時收到一封匿名簡訊：「別回頭，兇手就在社辦裡。」',
+        '密室裡的時鐘停在三點十五分，窗台上只留下一隻左腳拖鞋。',
+        '學姊失蹤前留下的最後線索，是一張只寫著三個字「不要吃」的便利貼。',
+        '活動中心鎖死的儲藏室裡，突然傳出節奏整齊的敲門聲。'
+      ],
+      '無厘頭日常': [
+        '我只是想買一杯微糖去冰，店員卻遞給我一把光劍。',
+        '早上醒來發現全校師生都改用饒舌的方式溝通。',
+        '電梯門一打開，裡面站著一排戴墨鏡的企鵝正在開會。',
+        '老師點我上台解題，我一轉身粉筆竟然自己逃跑了。',
+        '外送員按門鈴時說：「這是十年前的你自己訂的珍奶。」'
+      ]
+    };
+
+    const REACTION_DEFS = [
+      { key: 'laugh', emoji: '😂', label: '笑死' },
+      { key: 'shock', emoji: '😱', label: '神展開' },
+      { key: 'plotHole', emoji: '🤔', label: '吃書警告' }
+    ];
+
+    // =========================================================================
+    // 2. 應用程式狀態
+    // =========================================================================
+    const state = {
+      firebaseReady: false,
+      db: null,
+      auth: null,
+      appId: typeof __app_id !== 'undefined' ? __app_id : 'default-app-id',
+      userId: null,
+      roomUnsubscribe: null,
+
+      // 目前遊玩模式：'online' 或 'local'
+      mode: 'online',
+      homeTab: 'online',
+
+      // 首頁表單暫存
+      onlineForm: { maxPerTeam: 5, maxChars: 10, turnMode: 'sequential' },
+      localForm: { maxPerTeam: 5, maxChars: 10, turnMode: 'sequential' },
+      joinForm: { selectedTeam: 'A', lookupRoom: null },
+
+      // 當前房間與視圖狀態
+      room: null,
+      view: 'home', // 'home' | 'lobby' | 'hostPlaying' | 'memberPlaying' | 'finished'
+      customBaseUrl: '',
+      lastQrTarget: '',
+      spoilerShield: false,
+      mobileResultTab: 'A',
+      soundEnabled: true,
+      isSubmitting: false
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    // =========================================================================
+    // 3. 輕量級 Web Audio API 音效（免 CDN 永不報錯）
+    // =========================================================================
+    let audioCtx = null;
+    function playSound(type) {
+      if (!state.soundEnabled) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const playTone = (freq, start, dur, vol = 0.08) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(vol, start);
+          gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(start);
+          osc.stop(start + dur);
+        };
+
+        if (type === 'submit') { playTone(523.25, now, 0.12); playTone(659.25, now + 0.06, 0.14); }
+        else if (type === 'react') { playTone(783.99, now, 0.09, 0.06); }
+        else if (type === 'turn') { playTone(587.33, now, 0.1); playTone(880, now + 0.07, 0.16); }
+        else if (type === 'finish') {
+          playTone(523.25, now, 0.15);
+          playTone(659.25, now + 0.09, 0.15);
+          playTone(783.99, now + 0.18, 0.15);
+          playTone(1046.5, now + 0.27, 0.35);
+        } else if (type === 'error') {
+          playTone(220, now, 0.18, 0.09);
+        }
+      } catch (_) {}
+    }
+
+    // =========================================================================
+    // 4. 通用輔助函式（全面 try/catch 防呆）
+    // =========================================================================
+    function showToast(msg, type = 'info') {
+      try {
+        const container = $('toastContainer');
+        const el = document.createElement('div');
+        const styles = {
+          info: 'bg-ink text-white',
+          success: 'bg-emerald-600 text-white',
+          error: 'bg-rose-600 text-white',
+          warn: 'bg-amber-600 text-white'
+        };
+        el.className = `${styles[type] || styles.info} text-xs sm:text-sm font-bold px-4 py-2.5 rounded-2xl shadow-lg pointer-events-auto animate-pop-in text-center`;
+        el.textContent = msg;
+        container.appendChild(el);
+        setTimeout(() => {
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(-8px)';
+          el.style.transition = 'all 0.25s ease';
+          setTimeout(() => el.remove(), 250);
+        }, 2600);
+      } catch (_) {}
+    }
+
+    let modalResolver = null;
+    function showConfirmModal(title, message, confirmText = '確定') {
+      $('modalTitle').textContent = title;
+      $('modalMessage').textContent = message;
+      $('modalConfirmBtn').textContent = confirmText;
+      $('customModal').classList.remove('hidden');
+      return new Promise((res) => { modalResolver = res; });
+    }
+    $('modalCancelBtn').addEventListener('click', () => {
+      $('customModal').classList.add('hidden');
+      if (modalResolver) modalResolver(false);
+    });
+    $('modalConfirmBtn').addEventListener('click', () => {
+      $('customModal').classList.add('hidden');
+      if (modalResolver) modalResolver(true);
+    });
+
+    function copyTextToClipboard(text, successMsg = '已複製到剪貼簿！') {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) {
+          showToast(successMsg, 'success');
+          return true;
+        }
+      } catch (_) {}
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(() => showToast(successMsg, 'success'))
+            .catch(() => showToast('複製失敗，請手動選取文字', 'warn'));
+          return true;
+        }
+      } catch (_) {}
+      showToast('目前瀏覽器不支援自動複製，請手動複製', 'warn');
+      return false;
+    }
+
+    function countChars(str) {
+      return Array.from((str || '').trim()).length;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function generateRoomCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let out = '';
+      for (let i = 0; i < 5; i++) out += chars[Math.floor(Math.random() * chars.length)];
+      return out;
+    }
+
+    function ensurePunctuation(str) {
+      const t = (str || '').trim();
+      if (!t) return '';
+      const last = t[t.length - 1];
+      const puncts = ['。', '！', '？', '!', '?', '…', '」', '』', '，', ',', '.', '~', '～'];
+      return puncts.includes(last) ? t : t + '。';
+    }
+
+    function isSandboxEnv() {
+      try {
+        const href = window.location.href || '';
+        return href.startsWith('about:') || href.startsWith('blob:') || href.startsWith('data:') || href.startsWith('file:');
+      } catch (_) {
+        return true;
+      }
+    }
+
+    function buildInviteUrl(roomCode) {
+      try {
+        if (state.customBaseUrl && state.customBaseUrl.trim()) {
+          const u = new URL(state.customBaseUrl.trim());
+          u.searchParams.set('room', roomCode);
+          return u.toString();
+        }
+        if (!isSandboxEnv()) {
+          const u = new URL(window.location.href);
+          u.searchParams.set('room', roomCode);
+          return u.toString();
+        }
+      } catch (_) {}
+      // 沙盒預覽環境下的友善編碼文字（掃碼可讀到房號）
+      return `故事接龍房間代碼：${roomCode}`;
+    }
+
+    function isHost() {
+      if (!state.room) return false;
+      if (state.mode === 'local') return true;
+      return state.room.hostId === state.userId;
+    }
+
+    function getMyTeamKey() {
+      if (!state.room || !state.userId) return null;
+      if ((state.room.teams?.A?.players || []).some(p => p.id === state.userId)) return 'A';
+      if ((state.room.teams?.B?.players || []).some(p => p.id === state.userId)) return 'B';
+      return null;
+    }
+
+    function countTeamReactions(sentences) {
+      const sum = { laugh: 0, shock: 0, plotHole: 0 };
+      (sentences || []).forEach(s => {
+        sum.laugh += (s.reactions?.laugh?.length || 0);
+        sum.shock += (s.reactions?.shock?.length || 0);
+        sum.plotHole += (s.reactions?.plotHole?.length || 0);
+      });
+      return sum;
+    }
+
+    // =========================================================================
+    // 5. Firebase 初始化（背景非同步執行，絕不卡住首頁）
+    // =========================================================================
+    async function initFirebase() {
+      const dot = $('connectionDot');
+      const txt = $('connectionText');
+
+      try {
+        if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+          throw new Error('NO_CONFIG');
+        }
+        const firebaseConfig = typeof __firebase_config === 'string'
+          ? JSON.parse(__firebase_config)
+          : __firebase_config;
+
+        const app = initializeApp(firebaseConfig);
+        state.auth = getAuth(app);
+        state.db = getFirestore(app);
+
+        // 先完成身份驗證（優先使用 customToken，再降級匿名登入）
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(state.auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(state.auth);
+        }
+
+        state.userId = state.auth.currentUser?.uid || ('u_' + Math.random().toString(36).slice(2, 10));
+        state.firebaseReady = true;
+
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500';
+        txt.textContent = '已連線';
+
+        // 檢查網址 ?room=XXXXX 參數
+        checkUrlRoomParam();
+      } catch (err) {
+        console.warn('Firebase init fallback to local:', err);
+        state.firebaseReady = false;
+        state.userId = 'local_' + Math.random().toString(36).slice(2, 10);
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500';
+        txt.textContent = '單機模式';
+      }
+    }
+
+    // 嚴格遵守路徑規則：artifacts/{appId}/public/data/story_chain_rooms/{roomCode}
+    function getRoomRef(roomCode) {
+      return doc(state.db, 'artifacts', state.appId, 'public', 'data', 'story_chain_rooms', roomCode);
+    }
+
+    function checkUrlRoomParam() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const roomParam = (params.get('room') || '').trim().toUpperCase();
+        if (roomParam && roomParam.length >= 4) {
+          setHomeTab('online');
+          $('joinRoomCodeInput').value = roomParam.slice(0, 5);
+          $('qrAutoJoinNotice').classList.remove('hidden');
+          $('joinCard').classList.add('ring-2', 'ring-emerald-400');
+          lookupRoomForJoin(roomParam.slice(0, 5));
+        }
+      } catch (_) {}
+    }
+
+    // =========================================================================
+    // 6. 畫面切換與總渲染控制
+    // =========================================================================
+    function setHomeTab(tab) {
+      state.homeTab = tab;
+      const isOnline = tab === 'online';
+      $('homeOnlinePanel').classList.toggle('hidden', !isOnline);
+      $('homeLocalPanel').classList.toggle('hidden', isOnline);
+      $('homeTabOnline').className = `btn-journal py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition ${
+        isOnline ? 'bg-teamA text-white shadow-sm' : 'text-inkLight hover:bg-[#FAF6EE]'
+      }`;
+      $('homeTabLocal').className = `btn-journal py-2.5 px-3 rounded-xl text-xs sm:text-sm font-black transition ${
+        !isOnline ? 'bg-teamB text-white shadow-sm' : 'text-inkLight hover:bg-[#FAF6EE]'
+      }`;
+    }
+
+    function switchView(viewName) {
+      state.view = viewName;
+      ['viewHome', 'viewLobby', 'viewHostPlaying', 'viewMemberPlaying', 'viewFinished'].forEach(id => {
+        $(id).classList.add('hidden');
+      });
+      const map = {
+        home: 'viewHome',
+        lobby: 'viewLobby',
+        hostPlaying: 'viewHostPlaying',
+        memberPlaying: 'viewMemberPlaying',
+        finished: 'viewFinished'
+      };
+      $(map[viewName]).classList.remove('hidden');
+      $('leaveRoomBtn').classList.toggle('hidden', viewName === 'home');
+      $('memberBottomDock').classList.toggle('hidden', viewName !== 'memberPlaying');
+    }
+
+    function renderAll() {
+      if (!state.room) {
+        switchView('home');
+        return;
+      }
+
+      const host = isHost();
+      const myTeam = getMyTeamKey();
+
+      if (state.mode === 'online' && !host && !myTeam) {
+        showToast('你已被房主移出房間', 'warn');
+        leaveRoom(true);
+        return;
+      }
+
+      if (state.room.status === 'lobby') {
+        if (state.view !== 'lobby') switchView('lobby');
+        renderLobby();
+      } else if (state.room.status === 'playing') {
+        if (host) {
+          if (state.view !== 'hostPlaying') switchView('hostPlaying');
+          renderHostPlaying();
+        } else {
+          if (state.view !== 'memberPlaying') switchView('memberPlaying');
+          renderMemberPlaying(myTeam);
+        }
+      } else if (state.room.status === 'finished') {
+        if (state.view !== 'finished') {
+          switchView('finished');
+          playSound('finish');
+        }
+        renderFinished();
+      }
+    }
+
+    // 統一更新房間資料（自動區分 Online Firestore 與 Local 記憶體模式）
+    async function mutateRoom(updaterFn) {
+      if (!state.room) return;
+      if (state.mode === 'local') {
+        updaterFn(state.room);
+        renderAll();
+        return;
+      }
+      if (!state.firebaseReady || !state.userId) {
+        showToast('尚未連線至雲端，無法同步操作', 'error');
+        return;
+      }
+      try {
+        const ref = getRoomRef(state.room.roomCode);
+        await runTransaction(state.db, async (tx) => {
+          const snap = await tx.get(ref);
+          if (!snap.exists()) throw new Error('ROOM_GONE');
+          const draft = JSON.parse(JSON.stringify(snap.data()));
+          updaterFn(draft);
+          tx.set(ref, draft);
+        });
+      } catch (err) {
+        console.error('mutateRoom error:', err);
+        if (err.message === 'TARGET_FULL') showToast('目標組別人數已滿！', 'warn');
+        else if (err.message === 'NOT_YOUR_TURN') showToast('目前還沒輪到你喔！', 'warn');
+        else if (err.message === 'NO_CONSECUTIVE') showToast('自由接龍不能連發兩句喔！', 'warn');
+        else showToast('同步失敗，請稍後再試', 'error');
+      }
+    }
+
+    // =========================================================================
+    // 7. 建立房間（線上 / 單機）與加入房間
+    // =========================================================================
+    async function createOnlineRoom() {
+      if (!state.firebaseReady || !state.userId) {
+        showToast('目前無法連線至雲端，建議切換至「🎪 現場單機模式」遊玩！', 'warn');
+        return;
+      }
+      const btn = $('createOnlineRoomBtn');
+      btn.disabled = true;
+
+      try {
+        const roomCode = generateRoomCode();
+        const hostName = $('hostNicknameInput').value.trim() || '房主';
+        const newRoom = {
+          roomCode,
+          hostId: state.userId,
+          hostName,
+          status: 'lobby',
+          createdAt: Date.now(),
+          settings: {
+            maxPerTeam: state.onlineForm.maxPerTeam,
+            maxChars: state.onlineForm.maxChars,
+            turnMode: state.onlineForm.turnMode,
+            samePrompt: true,
+            promptA: '',
+            promptB: ''
+          },
+          teams: {
+            A: { name: 'A 組（靛藍隊）', players: [], currentTurnIndex: 0, sentences: [] },
+            B: { name: 'B 組（暖橘隊）', players: [], currentTurnIndex: 0, sentences: [] }
+          }
+        };
+
+        await setDoc(getRoomRef(roomCode), newRoom);
+        state.mode = 'online';
+        state.lastQrTarget = '';
+        subscribeToRoom(roomCode);
+        showToast(`房間 ${roomCode} 建立成功！`, 'success');
+      } catch (err) {
+        console.error('createOnlineRoom error:', err);
+        showToast('建立房間失敗，請檢查網路或改用現場單機模式', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function startLocalLobby() {
+      state.mode = 'local';
+      state.room = {
+        roomCode: 'LOCAL',
+        hostId: 'local_host',
+        hostName: '現場主持人',
+        status: 'lobby',
+        createdAt: Date.now(),
+        settings: {
+          maxPerTeam: state.localForm.maxPerTeam,
+          maxChars: state.localForm.maxChars,
+          turnMode: state.localForm.turnMode,
+          samePrompt: true,
+          promptA: '',
+          promptB: ''
+        },
+        teams: {
+          A: { name: 'A 組（靛藍隊）', players: [], currentTurnIndex: 0, sentences: [] },
+          B: { name: 'B 組（暖橘隊）', players: [], currentTurnIndex: 0, sentences: [] }
+        }
+      };
+      renderAll();
+      showToast('已進入現場單機大廳！可新增隊員或加入測試組員', 'success');
+    }
+
+    async function lookupRoomForJoin(code) {
+      if (!code || code.length < 4) return;
+      if (!state.firebaseReady || !state.userId) {
+        $('joinRoomLookupHint').textContent = '⚠️ 目前未連線至雲端，請確認網路或使用單機模式';
+        return;
+      }
+      const hint = $('joinRoomLookupHint');
+      hint.textContent = '查詢房間人數中...';
+      hint.className = 'text-[11px] font-bold mt-1.5 min-h-[16px] text-inkLight';
+
+      try {
+        const snap = await getDoc(getRoomRef(code));
+        if (!snap.exists()) {
+          state.joinForm.lookupRoom = null;
+          hint.textContent = '❌ 找不到此房號，請確認是否輸入正確';
+          hint.className = 'text-[11px] font-bold mt-1.5 min-h-[16px] text-rose-600';
+          updateJoinTeamButtonsUI(null);
+          return;
+        }
+        const data = snap.data();
+        state.joinForm.lookupRoom = data;
+        const max = data.settings.maxPerTeam;
+        const cA = data.teams.A.players.length;
+        const cB = data.teams.B.players.length;
+        hint.textContent = `✅ 找到房間！每組上限 ${max} 人（A組 ${cA}/${max}・B組 ${cB}/${max}）`;
+        hint.className = 'text-[11px] font-bold mt-1.5 min-h-[16px] text-emerald-700';
+        updateJoinTeamButtonsUI(data);
+      } catch (err) {
+        console.error('lookupRoom error:', err);
+        hint.textContent = '查詢失敗，請再試一次';
+      }
+    }
+
+    function updateJoinTeamButtonsUI(roomData) {
+      const btnA = $('pickTeamABtn');
+      const btnB = $('pickTeamBBtn');
+      let fullA = false;
+      let fullB = false;
+
+      if (roomData) {
+        const max = roomData.settings.maxPerTeam;
+        const cA = roomData.teams.A.players.length;
+        const cB = roomData.teams.B.players.length;
+        fullA = cA >= max;
+        fullB = cB >= max;
+
+        $('lookupCountA').textContent = `${cA} / ${max} 人`;
+        $('lookupCountB').textContent = `${cB} / ${max} 人`;
+        $('lookupStatusA').textContent = fullA ? '⚠️ 此組已滿' : '可加入 A 組';
+        $('lookupStatusB').textContent = fullB ? '⚠️ 此組已滿' : '可加入 B 組';
+
+        if (fullA && !fullB && state.joinForm.selectedTeam === 'A') state.joinForm.selectedTeam = 'B';
+        else if (fullB && !fullA && state.joinForm.selectedTeam === 'B') state.joinForm.selectedTeam = 'A';
+      } else {
+        $('lookupCountA').textContent = '靛藍隊';
+        $('lookupCountB').textContent = '暖橘隊';
+        $('lookupStatusA').textContent = '點擊選擇 A 組';
+        $('lookupStatusB').textContent = '點擊選擇 B 組';
+      }
+
+      btnA.disabled = fullA;
+      btnB.disabled = fullB;
+      const sel = state.joinForm.selectedTeam;
+
+      btnA.className = `btn-journal p-3 rounded-2xl border-2 text-left transition ${
+        fullA ? 'opacity-45 cursor-not-allowed bg-gray-100 border-gray-200' :
+        sel === 'A' ? 'border-teamA bg-teamALight shadow-xs' : 'border-[#E2D6C0] bg-[#FAF6EE] hover:border-indigo-300'
+      }`;
+      btnB.className = `btn-journal p-3 rounded-2xl border-2 text-left transition ${
+        fullB ? 'opacity-45 cursor-not-allowed bg-gray-100 border-gray-200' :
+        sel === 'B' ? 'border-teamB bg-teamBLight shadow-xs' : 'border-[#E2D6C0] bg-[#FAF6EE] hover:border-orange-300'
+      }`;
+    }
+
+    async function joinOnlineRoom() {
+      if (!state.firebaseReady || !state.userId) {
+        showToast('目前無法連線至雲端，請確認網路狀態', 'warn');
+        return;
+      }
+      const code = $('joinRoomCodeInput').value.trim().toUpperCase();
+      const nickname = $('joinNicknameInput').value.trim();
+      const teamKey = state.joinForm.selectedTeam;
+
+      if (code.length < 4) {
+        showToast('請輸入正確的 5 碼房號！', 'warn');
+        $('joinRoomCodeInput').focus();
+        return;
+      }
+      if (!nickname) {
+        showToast('請輸入你的暱稱！', 'warn');
+        $('joinNicknameInput').focus();
+        return;
+      }
+
+      const btn = $('joinOnlineRoomBtn');
+      btn.disabled = true;
+
+      try {
+        const ref = getRoomRef(code);
+        await runTransaction(state.db, async (tx) => {
+          const snap = await tx.get(ref);
+          if (!snap.exists()) throw new Error('NOT_FOUND');
+          const data = snap.data();
+
+          if (data.hostId === state.userId) return;
+          const inA = data.teams.A.players.some(p => p.id === state.userId);
+          const inB = data.teams.B.players.some(p => p.id === state.userId);
+          if (inA || inB) return;
+
+          if (data.status === 'finished') throw new Error('FINISHED');
+          if (data.teams[teamKey].players.length >= data.settings.maxPerTeam) throw new Error('TEAM_FULL');
+
+          const palette = teamKey === 'A' ? COLORS_A : COLORS_B;
+          const updated = [...data.teams[teamKey].players, {
+            id: state.userId,
+            name: nickname,
+            color: palette[data.teams[teamKey].players.length % palette.length],
+            isBot: false
+          }];
+          tx.update(ref, { [`teams.${teamKey}.players`]: updated });
+        });
+
+        state.mode = 'online';
+        state.lastQrTarget = '';
+        subscribeToRoom(code);
+        showToast(`歡迎加入 ${teamKey === 'A' ? '🔵 A 組（靛藍隊）' : '🟠 B 組（暖橘隊）'}！`, 'success');
+      } catch (err) {
+        if (err.message === 'NOT_FOUND') showToast('找不到此房號，請確認是否正確', 'error');
+        else if (err.message === 'TEAM_FULL') {
+          showToast(`${teamKey} 組已滿！請改選另一組`, 'warn');
+          lookupRoomForJoin(code);
+        } else if (err.message === 'FINISHED') showToast('該房間比賽已經結束囉！', 'warn');
+        else {
+          console.error('joinOnlineRoom error:', err);
+          showToast('加入房間失敗，請再試一次', 'error');
+        }
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function subscribeToRoom(roomCode) {
+      if (state.roomUnsubscribe) {
+        state.roomUnsubscribe();
+        state.roomUnsubscribe = null;
+      }
+      state.roomUnsubscribe = onSnapshot(
+        getRoomRef(roomCode),
+        (snap) => {
+          if (!snap.exists()) {
+            showToast('房間已關閉', 'warn');
+            leaveRoom(true);
+            return;
+          }
+          const prev = state.room;
+          state.room = snap.data();
+
+          if (prev && state.room.status === 'playing') {
+            const myTeam = getMyTeamKey();
+            if (myTeam) {
+              const prevLen = prev.teams[myTeam].sentences.length;
+              const curLen = state.room.teams[myTeam].sentences.length;
+              if (curLen > prevLen) {
+                playSound('submit');
+                setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+              }
+            }
+          }
+          renderAll();
+        },
+        (error) => {
+          console.error('onSnapshot error:', error);
+          showToast('即時同步中斷，請檢查網路連線', 'error');
+        }
+      );
+    }
+
+    async function leaveRoom(skipConfirm = false) {
+      if (!skipConfirm && state.room && state.room.status === 'playing') {
+        const ok = await showConfirmModal('確定離開房間？', '目前遊戲正在進行中，確定要回到首頁嗎？', '確定離開');
+        if (!ok) return;
+      }
+      if (state.roomUnsubscribe) {
+        state.roomUnsubscribe();
+        state.roomUnsubscribe = null;
+      }
+      state.room = null;
+      state.lastQrTarget = '';
+      switchView('home');
+    }
+
+    // =========================================================================
+    // 8. 渲染大廳 (Lobby + 穩定 QR Code 圖片 + 測試組員 + 統一出題)
+    // =========================================================================
+    function updateQrImages(roomCode) {
+      const targetData = buildInviteUrl(roomCode);
+      if (state.lastQrTarget === targetData) return;
+      state.lastQrTarget = targetData;
+
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=12&data=${encodeURIComponent(targetData)}`;
+
+      const lobbyImg = $('lobbyQrImg');
+      const lobbyFallback = $('lobbyQrFallback');
+      const modalImg = $('modalQrImg');
+      const modalFallback = $('modalQrFallback');
+
+      $('lobbyQrFallbackCode').textContent = roomCode;
+      $('modalQrFallbackCode').textContent = roomCode;
+      $('modalRoomCodeDisplay').textContent = roomCode;
+
+      lobbyImg.classList.remove('hidden');
+      lobbyFallback.classList.add('hidden');
+      modalImg.classList.remove('hidden');
+      modalFallback.classList.add('hidden');
+
+      lobbyImg.onerror = () => {
+        lobbyImg.classList.add('hidden');
+        lobbyFallback.classList.remove('hidden');
+      };
+      modalImg.onerror = () => {
+        modalImg.classList.add('hidden');
+        modalFallback.classList.remove('hidden');
+      };
+
+      lobbyImg.src = qrApiUrl;
+      modalImg.src = qrApiUrl;
+    }
+
+    function renderLobby() {
+      const room = state.room;
+      const host = isHost();
+      const isOnline = state.mode === 'online';
+      const myTeam = getMyTeamKey();
+      const { maxPerTeam, maxChars, turnMode, samePrompt, promptA, promptB } = room.settings;
+
+      $('lobbyOnlineQrCard').classList.toggle('hidden', !isOnline);
+      $('lobbyLocalHeaderCard').classList.toggle('hidden', isOnline);
+      $('hostLobbyQuickBar').classList.toggle('hidden', !host);
+      $('localAddAForm').classList.toggle('hidden', isOnline);
+      $('localAddBForm').classList.toggle('hidden', isOnline);
+
+      const pillsHtml = `
+        <span class="font-bold px-3 py-1 rounded-full bg-[#FAF6EE] text-ink border border-[#EAE0CC]">👥 每組上限 ${maxPerTeam} 人</span>
+        <span class="font-bold px-3 py-1 rounded-full bg-orange-50 text-teamB border border-orange-200">✍️ ${maxChars > 0 ? `限 ${maxChars} 字內` : '不限字數'}</span>
+        <span class="font-bold px-3 py-1 rounded-full bg-teamALight text-teamA border border-indigo-200">${turnMode === 'sequential' ? '🔄 依序輪流' : '⚡ 自由接龍（不可連發）'}</span>
+      `;
+
+      if (isOnline) {
+        $('lobbyRoomCodeText').textContent = room.roomCode;
+        $('lobbyRulePills').innerHTML = pillsHtml;
+        $('customQrUrlBox').classList.toggle('hidden', !host);
+        $('sandboxNoticeTag').classList.toggle('hidden', !isSandboxEnv());
+        $('memberLobbyWaitBox').classList.toggle('hidden', host);
+        if (!host && myTeam) {
+          $('memberMyTeamLabel').textContent = myTeam === 'A' ? '🔵 A 組（靛藍隊）' : '🟠 B 組（暖橘隊）';
+        }
+        updateQrImages(room.roomCode);
+      } else {
+        $('lobbyLocalRulePills').innerHTML = pillsHtml;
+      }
+
+      // 渲染 A/B 兩組名單
+      ['A', 'B'].forEach(teamKey => {
+        const players = room.teams[teamKey].players || [];
+        const isFull = players.length >= maxPerTeam;
+        $(`lobbyTeam${teamKey}Count`).textContent = `${players.length} / ${maxPerTeam} 人${isFull ? ' (已滿)' : ''}`;
+        const listEl = $(`lobbyTeam${teamKey}List`);
+        listEl.innerHTML = '';
+
+        if (players.length === 0) {
+          listEl.innerHTML = `
+            <li class="text-center py-7 text-xs text-inkLight bg-[#FAF6EE]/70 rounded-2xl border border-dashed border-[#DCD0BA]">
+              ${isOnline ? `等待夥伴掃碼加入 ${teamKey} 組...` : `請在上方輸入暱稱加入 ${teamKey} 組，或點「加入測試組員」`}
+            </li>
+          `;
+        } else {
+          players.forEach((p, idx) => {
+            const isMe = isOnline && p.id === state.userId;
+            const li = document.createElement('li');
+            li.className = 'flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#FAF6EE] border border-[#EAE0CC]';
+            li.innerHTML = `
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="w-7 h-7 rounded-xl text-white font-black text-xs flex items-center justify-center shrink-0" style="background-color:${p.color}">${idx + 1}</span>
+                <span class="font-bold text-sm text-ink truncate">${escapeHtml(p.name)}</span>
+                ${isMe ? '<span class="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">你</span>' : ''}
+                ${p.isBot ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">測試</span>' : ''}
+              </div>
+              ${host ? `
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-swap-uid="${p.id}" data-from="${teamKey}" class="host-swap-btn text-[11px] font-bold px-2.5 py-1 rounded-lg bg-white hover:bg-indigo-50 text-ink border border-[#DCD0BA]">
+                    換去 ${teamKey === 'A' ? 'B' : 'A'} 組
+                  </button>
+                  <button type="button" data-kick-uid="${p.id}" data-from="${teamKey}" class="host-kick-btn text-[11px] font-bold px-2 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-600 border border-rose-200" title="移除">
+                    ✕
+                  </button>
+                </div>
+              ` : ''}
+            `;
+            listEl.appendChild(li);
+          });
+        }
+      });
+
+      if (host) {
+        document.querySelectorAll('.host-swap-btn').forEach(btn => {
+          btn.addEventListener('click', () => swapPlayerTeam(btn.dataset.swapUid, btn.dataset.from));
+        });
+        document.querySelectorAll('.host-kick-btn').forEach(btn => {
+          btn.addEventListener('click', () => removePlayer(btn.dataset.kickUid, btn.dataset.from));
+        });
+
+        $('hostPromptControlPanel').classList.remove('hidden');
+        $('toggleDifferentPrompts').checked = !samePrompt;
+        $('promptALabel').textContent = samePrompt
+          ? '📖 統一故事開頭第一句（A／B 兩組共用）'
+          : '🔵 A 組專屬故事開頭第一句';
+        $('promptBBox').classList.toggle('hidden', samePrompt);
+
+        if (document.activeElement !== $('hostPromptAInput')) $('hostPromptAInput').value = promptA || '';
+        if (document.activeElement !== $('hostPromptBInput')) $('hostPromptBInput').value = promptB || '';
+
+        const canStart = room.teams.A.players.length >= 1 && room.teams.B.players.length >= 1;
+        $('hostStartGameBtn').disabled = !canStart;
+        $('hostStartGameBtn').textContent = canStart
+          ? '🚀 統一開始遊戲（兩組同步開戰！）'
+          : '👥 A 組與 B 組需各至少有 1 位組員才能開戰';
+      } else {
+        $('hostPromptControlPanel').classList.add('hidden');
+      }
+    }
+
+    async function addTestPlayers() {
+      const sampleA = ['小藍', '吉他手阿明'];
+      const sampleB = ['小橘', '美術社小花'];
+      await mutateRoom((draft) => {
+        const max = draft.settings.maxPerTeam;
+        sampleA.forEach((name) => {
+          if (draft.teams.A.players.length < max && !draft.teams.A.players.some(p => p.name === name)) {
+            draft.teams.A.players.push({
+              id: 'bot_A_' + Math.random().toString(36).slice(2, 7),
+              name,
+              color: COLORS_A[draft.teams.A.players.length % COLORS_A.length],
+              isBot: true
+            });
+          }
+        });
+        sampleB.forEach((name) => {
+          if (draft.teams.B.players.length < max && !draft.teams.B.players.some(p => p.name === name)) {
+            draft.teams.B.players.push({
+              id: 'bot_B_' + Math.random().toString(36).slice(2, 7),
+              name,
+              color: COLORS_B[draft.teams.B.players.length % COLORS_B.length],
+              isBot: true
+            });
+          }
+        });
+      });
+      playSound('react');
+      showToast('已加入測試組員！現在可以抽題並按「統一開始遊戲」', 'success');
+    }
+
+    async function swapPlayerTeam(uid, fromTeam) {
+      const toTeam = fromTeam === 'A' ? 'B' : 'A';
+      await mutateRoom((draft) => {
+        if (draft.teams[toTeam].players.length >= draft.settings.maxPerTeam) {
+          throw new Error('TARGET_FULL');
+        }
+        const player = draft.teams[fromTeam].players.find(p => p.id === uid);
+        if (!player) return;
+        draft.teams[fromTeam].players = draft.teams[fromTeam].players.filter(p => p.id !== uid);
+        const palette = toTeam === 'A' ? COLORS_A : COLORS_B;
+        draft.teams[toTeam].players.push({
+          ...player,
+          color: palette[draft.teams[toTeam].players.length % palette.length]
+        });
+      });
+      showToast(`已換至 ${toTeam} 組`, 'info');
+    }
+
+    async function removePlayer(uid, fromTeam) {
+      await mutateRoom((draft) => {
+        draft.teams[fromTeam].players = draft.teams[fromTeam].players.filter(p => p.id !== uid);
+      });
+      showToast('已移除該組員', 'info');
+    }
+
+    // =========================================================================
+    // 9. 渲染房主上帝視角（含單機雙組接龍 & 測試模擬發言）
+    // =========================================================================
+    function renderHostPlaying() {
+      const room = state.room;
+      const { maxChars, turnMode, samePrompt, promptA, promptB } = room.settings;
+      const isLocal = state.mode === 'local';
+
+      $('hostPlayingTitle').textContent = isLocal ? '現場雙組接龍舞台' : '房主即時監控台';
+      $('hostPlayRoomTag').textContent = isLocal ? '單機模式' : `房號 ${room.roomCode}`;
+      $('hostCharRulePill').textContent = maxChars > 0 ? `限 ${maxChars} 字內` : '不限字數';
+
+      ['A', 'B'].forEach(teamKey => {
+        const team = room.teams[teamKey];
+        const players = team.players || [];
+        const sentences = team.sentences || [];
+        const curPlayer = players.length ? players[team.currentTurnIndex % players.length] : null;
+        const promptText = teamKey === 'A' ? promptA : (samePrompt ? promptA : promptB);
+
+        $(`hostTeam${teamKey}CountBadge`).textContent = `${sentences.length} 句`;
+        $(`hostTeam${teamKey}TurnInfo`).textContent = turnMode === 'sequential'
+          ? `目前輪到：${curPlayer ? curPlayer.name : '無成員'}`
+          : '⚡ 自由接龍中（不可連發）';
+        $(`hostTeam${teamKey}PromptText`).textContent = promptText || '（無預設開頭，由第一人自由發揮）';
+
+        const rSum = countTeamReactions(sentences);
+        $(`hostTeam${teamKey}ReactionSum`).innerHTML = `
+          <span>😂 ${rSum.laugh}</span>
+          <span>😱 ${rSum.shock}</span>
+          <span>🤔 ${rSum.plotHole}</span>
+        `;
+
+        document.querySelectorAll(`.host-skip-btn[data-skip-team="${teamKey}"]`).forEach(btn => {
+          btn.classList.toggle('hidden', turnMode !== 'sequential');
+        });
+
+        const feedEl = $(`hostTeam${teamKey}Feed`);
+        feedEl.innerHTML = '';
+
+        if (state.spoilerShield) {
+          feedEl.innerHTML = `
+            <div class="py-10 px-4 rounded-2xl bg-[#FAF6EE] border-2 border-dashed border-[#D6CBB8] text-center space-y-2">
+              <div class="text-3xl">🙈</div>
+              <div class="text-sm font-black text-ink">防劇透投影模式開啟中</div>
+              <p class="text-xs text-inkLight">已累計接龍 <span class="font-black text-teamB">${sentences.length}</span> 句，文字將在結算時一次揭曉！</p>
+            </div>
+          `;
+        } else if (sentences.length === 0) {
+          feedEl.innerHTML = `
+            <div class="py-8 text-center text-xs text-inkLight bg-[#FAF6EE]/60 rounded-2xl border border-dashed border-[#DCD0BA]">
+              等待 ${teamKey} 組寫下第一句...
+            </div>
+          `;
+        } else {
+          sentences.forEach((s, idx) => {
+            const div = document.createElement('div');
+            div.className = 'p-3 rounded-2xl bg-[#FAF6EE] border border-[#EAE0CC] space-y-2';
+            const reactions = s.reactions || { laugh: [], shock: [], plotHole: [] };
+            const reactBtns = REACTION_DEFS.map(r => {
+              const cnt = (reactions[r.key] || []).length;
+              return `
+                <button type="button" data-team="${teamKey}" data-sid="${s.id}" data-rkey="${r.key}"
+                  class="host-react-btn btn-journal text-[11px] font-bold px-2 py-0.5 rounded-lg bg-white hover:bg-orange-50 border border-[#EAE0CC] text-inkLight">
+                  ${r.emoji} ${cnt > 0 ? cnt : ''}
+                </button>
+              `;
+            }).join('');
+
+            div.innerHTML = `
+              <div class="flex items-center justify-between gap-2 text-[11px]">
+                <span class="font-black px-2 py-0.5 rounded-full text-white" style="background-color:${s.authorColor}">#${idx + 1} ${escapeHtml(s.authorName)}</span>
+                <div class="flex items-center gap-1">${reactBtns}</div>
+              </div>
+              <p class="text-sm font-bold text-ink pl-1">${escapeHtml(s.text)}</p>
+            `;
+            feedEl.appendChild(div);
+          });
+          feedEl.scrollTop = feedEl.scrollHeight;
+        }
+
+        // 單機模式 或 該組含有測試組員時，顯示房主模擬／現場輸入框
+        const hasBot = players.some(p => p.isBot);
+        const showSim = isLocal || hasBot;
+        $(`hostSimBox${teamKey}`).classList.toggle('hidden', !showSim);
+        if (showSim && curPlayer) {
+          let activeSpeaker = curPlayer;
+          if (turnMode === 'free') {
+            const last = sentences[sentences.length - 1];
+            const candidate = players.find(p => p.id !== last?.authorId) || curPlayer;
+            activeSpeaker = candidate;
+          }
+          $(`hostSimLabel${teamKey}`).textContent = `✍️ 輪到【${activeSpeaker.name}】接下一句`;
+          updateHostSimCounter(teamKey);
+        }
+      });
+
+      document.querySelectorAll('.host-react-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleReaction(btn.dataset.team, btn.dataset.sid, btn.dataset.rkey));
+      });
+    }
+
+    function updateHostSimCounter(teamKey) {
+      if (!state.room) return;
+      const input = $(`hostSimInput${teamKey}`);
+      const counter = $(`hostSimCounter${teamKey}`);
+      const btn = $(`hostSimBtn${teamKey}`);
+      const maxChars = state.room.settings.maxChars;
+      const len = countChars(input.value);
+
+      if (maxChars > 0) {
+        counter.textContent = `${len} / ${maxChars} 字`;
+        if (len > maxChars) {
+          counter.className = 'font-mono font-black text-rose-600';
+          btn.disabled = true;
+        } else {
+          counter.className = 'font-mono font-bold text-inkLight';
+          btn.disabled = len === 0;
+        }
+      } else {
+        counter.textContent = `${len} 字`;
+        counter.className = 'font-mono font-bold text-inkLight';
+        btn.disabled = len === 0;
+      }
+    }
+
+    async function handleHostSimSubmit(teamKey, e) {
+      e.preventDefault();
+      if (!state.room || state.room.status !== 'playing') return;
+      const input = $(`hostSimInput${teamKey}`);
+      const text = input.value.trim();
+      const len = countChars(text);
+      const maxChars = state.room.settings.maxChars;
+
+      if (len === 0) return;
+      if (maxChars > 0 && len > maxChars) {
+        playSound('error');
+        input.classList.add('animate-shake');
+        setTimeout(() => input.classList.remove('animate-shake'), 320);
+        showToast(`超過 ${maxChars} 字上限囉！`, 'error');
+        return;
+      }
+
+      await mutateRoom((draft) => {
+        const team = draft.teams[teamKey];
+        if (!team.players.length) return;
+        let speaker = team.players[team.currentTurnIndex % team.players.length];
+        if (draft.settings.turnMode === 'free') {
+          const last = team.sentences[team.sentences.length - 1];
+          speaker = team.players.find(p => p.id !== last?.authorId) || speaker;
+        }
+        team.sentences.push({
+          id: 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          authorId: speaker.id,
+          authorName: speaker.name,
+          authorColor: speaker.color,
+          text,
+          reactions: { laugh: [], shock: [], plotHole: [] }
+        });
+        team.currentTurnIndex = (team.currentTurnIndex + 1) % team.players.length;
+      });
+
+      input.value = '';
+      updateHostSimCounter(teamKey);
+      playSound('submit');
+    }
+
+    // =========================================================================
+    // 10. 渲染線上組員專注接龍視角
+    // =========================================================================
+    function renderMemberPlaying(teamKey) {
+      const room = state.room;
+      const team = room.teams[teamKey];
+      const players = team.players || [];
+      const sentences = team.sentences || [];
+      const { maxChars, turnMode, samePrompt, promptA, promptB } = room.settings;
+      const promptText = teamKey === 'A' ? promptA : (samePrompt ? promptA : promptB);
+      const isA = teamKey === 'A';
+
+      $('memberTopCard').className = `bg-white rounded-3xl p-4 shadow-journal border-2 ${isA ? 'border-indigo-200' : 'border-orange-200'} space-y-3`;
+      $('memberTeamBadge').className = `text-xs font-black px-3 py-1 rounded-full text-white ${isA ? 'bg-teamA' : 'bg-teamB'}`;
+      $('memberTeamBadge').textContent = isA ? '🔵 A 組（靛藍隊）' : '🟠 B 組（暖橘隊）';
+      $('memberSentenceCountBadge').textContent = `已接 ${sentences.length} 句`;
+      $('memberCharRuleBadge').textContent = maxChars > 0 ? `限 ${maxChars} 字內` : '不限字數';
+
+      const strip = $('memberPlayersStrip');
+      strip.innerHTML = '';
+      const curPlayer = players.length ? players[team.currentTurnIndex % players.length] : null;
+      const lastSentence = sentences[sentences.length - 1];
+
+      players.forEach((p, idx) => {
+        const isTurn = turnMode === 'sequential' && idx === (team.currentTurnIndex % players.length);
+        const justSpoke = turnMode === 'free' && lastSentence?.authorId === p.id;
+        const el = document.createElement('div');
+        el.className = `shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-bold ${
+          isTurn
+            ? (isA ? 'bg-teamALight border-teamA text-teamA turn-glow-A' : 'bg-teamBLight border-teamB text-teamB turn-glow-B')
+            : 'bg-[#FAF6EE] border-[#EAE0CC] text-inkLight'
+        }`;
+        el.innerHTML = `
+          <span class="w-2.5 h-2.5 rounded-full" style="background-color:${p.color}"></span>
+          <span>${escapeHtml(p.name)}${p.id === state.userId ? ' (你)' : ''}</span>
+          ${isTurn ? '<span>✍️</span>' : ''}
+          ${justSpoke ? '<span class="text-[10px] opacity-70">(剛發過)</span>' : ''}
+        `;
+        strip.appendChild(el);
+      });
+
+      const feed = $('memberStoryFeed');
+      feed.innerHTML = '';
+
+      if (promptText) {
+        const openCard = document.createElement('div');
+        openCard.className = `rounded-3xl p-5 border-2 ${isA ? 'bg-teamALight/70 border-indigo-200' : 'bg-teamBLight/70 border-orange-200'}`;
+        openCard.innerHTML = `
+          <div class="text-xs font-black ${isA ? 'text-teamA' : 'text-teamB'} mb-1.5">📖 房主統一開頭題目</div>
+          <p class="text-base sm:text-lg font-bold font-serif text-ink leading-relaxed">${escapeHtml(promptText)}</p>
+        `;
+        feed.appendChild(openCard);
+      }
+
+      if (sentences.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'text-center py-10 px-4 bg-white/80 rounded-3xl border border-dashed border-[#D6CBB8] text-inkLight text-sm font-medium';
+        empty.textContent = '✍️ 比賽開始！等待第一位隊友寫下精彩的第一句...';
+        feed.appendChild(empty);
+      }
+
+      sentences.forEach((s, idx) => {
+        const isLatest = idx === sentences.length - 1;
+        const card = document.createElement('div');
+        card.className = `bg-white rounded-3xl p-4 sm:p-5 shadow-journal border ${
+          isLatest ? 'border-orange-300 ring-2 ring-orange-100 animate-pop-in' : 'border-[#EAE0CC]'
+        }`;
+        const reactions = s.reactions || { laugh: [], shock: [], plotHole: [] };
+        const reactHtml = REACTION_DEFS.map(r => {
+          const arr = reactions[r.key] || [];
+          const active = arr.includes(state.userId);
+          return `
+            <button type="button" data-sid="${s.id}" data-rkey="${r.key}"
+              class="member-react-btn btn-journal inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold border transition ${
+                active ? 'bg-orange-100 border-orange-300 text-orange-950' : 'bg-[#FAF6EE] hover:bg-[#EAE0CC] border-[#EAE0CC] text-inkLight'
+              }">
+              <span>${r.emoji}</span>
+              <span>${r.label}</span>
+              ${arr.length > 0 ? `<span class="ml-0.5 px-1.5 rounded-full bg-white text-ink text-[11px] font-black">${arr.length}</span>` : ''}
+            </button>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-black font-mono px-2 py-0.5 rounded-lg bg-[#FAF6EE] text-inkLight border border-[#EAE0CC]">#${idx + 1}</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style="background-color:${s.authorColor}">${escapeHtml(s.authorName)}</span>
+            </div>
+            ${isLatest ? '<span class="text-[11px] font-bold text-teamB">最新接龍</span>' : ''}
+          </div>
+          <p class="text-base sm:text-xl font-bold text-ink leading-relaxed pl-1 mb-3">${escapeHtml(s.text)}</p>
+          <div class="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#F4EFE4]">${reactHtml}</div>
+        `;
+        feed.appendChild(card);
+      });
+
+      feed.querySelectorAll('.member-react-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleReaction(teamKey, btn.dataset.sid, btn.dataset.rkey));
+      });
+
+      $('memberPrevPreview').textContent = lastSentence
+        ? `${lastSentence.authorName}：「${lastSentence.text}」`
+        : (promptText ? `開頭：「${promptText}」` : '（你是第一位，請寫下開頭！）');
+
+      let canInput = false;
+      let waitMsg = '';
+      if (turnMode === 'sequential') {
+        if (curPlayer?.id === state.userId) canInput = true;
+        else waitMsg = `正在等待隊友「${curPlayer ? curPlayer.name : '...'}」接下一句...`;
+      } else {
+        if (lastSentence?.authorId === state.userId) waitMsg = '你剛發過上一句囉！請等隊友接下一句～';
+        else canInput = true;
+      }
+
+      $('memberActiveInputBox').classList.toggle('hidden', !canInput);
+      $('memberWaitingBox').classList.toggle('hidden', canInput);
+      if (!canInput) {
+        $('memberWaitingText').innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full bg-teamB animate-ping"></span> ${escapeHtml(waitMsg)}`;
+      } else {
+        $('memberTurnLabel').textContent = turnMode === 'sequential'
+          ? '✍️ 輪到你接下一句！（不可推翻前人設定）'
+          : '⚡ 自由搶答中！有靈感就搶先送出';
+        updateMemberCharCounter();
+      }
+    }
+
+    function updateMemberCharCounter() {
+      if (!state.room) return;
+      const input = $('memberSentenceInput');
+      const counter = $('memberCharCounter');
+      const btn = $('memberSubmitBtn');
+      const maxChars = state.room.settings.maxChars;
+      const len = countChars(input.value);
+
+      if (maxChars > 0) {
+        counter.textContent = `${len} / ${maxChars} 字`;
+        if (len > maxChars) {
+          counter.className = 'font-mono font-black text-rose-600';
+          input.classList.add('border-rose-500', 'bg-rose-50/40');
+          btn.disabled = true;
+        } else {
+          counter.className = len === maxChars ? 'font-mono font-bold text-amber-600' : 'font-mono font-bold text-inkLight';
+          input.classList.remove('border-rose-500', 'bg-rose-50/40');
+          btn.disabled = len === 0 || state.isSubmitting;
+        }
+      } else {
+        counter.textContent = `${len} 字（不限）`;
+        counter.className = 'font-mono font-bold text-inkLight';
+        btn.disabled = len === 0 || state.isSubmitting;
+      }
+    }
+
+    async function handleMemberSubmit(e) {
+      e.preventDefault();
+      if (!state.room || state.room.status !== 'playing' || state.isSubmitting) return;
+      const teamKey = getMyTeamKey();
+      if (!teamKey) return;
+
+      const input = $('memberSentenceInput');
+      const text = input.value.trim();
+      const len = countChars(text);
+      const maxChars = state.room.settings.maxChars;
+
+      if (len === 0) return;
+      if (maxChars > 0 && len > maxChars) {
+        playSound('error');
+        input.classList.add('animate-shake');
+        setTimeout(() => input.classList.remove('animate-shake'), 320);
+        showToast(`超過 ${maxChars} 字上限囉！`, 'error');
+        return;
+      }
+
+      state.isSubmitting = true;
+      updateMemberCharCounter();
+
+      await mutateRoom((draft) => {
+        if (draft.status !== 'playing') return;
+        const team = draft.teams[teamKey];
+        const me = team.players.find(p => p.id === state.userId);
+        if (!me) return;
+
+        if (draft.settings.turnMode === 'sequential') {
+          const turnP = team.players[team.currentTurnIndex % team.players.length];
+          if (!turnP || turnP.id !== state.userId) throw new Error('NOT_YOUR_TURN');
+        } else {
+          const last = team.sentences[team.sentences.length - 1];
+          if (last && last.authorId === state.userId) throw new Error('NO_CONSECUTIVE');
+        }
+
+        team.sentences.push({
+          id: 's_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          authorId: me.id,
+          authorName: me.name,
+          authorColor: me.color,
+          text,
+          reactions: { laugh: [], shock: [], plotHole: [] }
+        });
+        team.currentTurnIndex = (team.currentTurnIndex + 1) % team.players.length;
+      });
+
+      input.value = '';
+      state.isSubmitting = false;
+      updateMemberCharCounter();
+    }
+
+    async function toggleReaction(teamKey, sentenceId, rKey) {
+      playSound('react');
+      const actorId = state.userId || 'host_actor';
+      await mutateRoom((draft) => {
+        const target = (draft.teams[teamKey].sentences || []).find(s => s.id === sentenceId);
+        if (!target) return;
+        if (!target.reactions) target.reactions = { laugh: [], shock: [], plotHole: [] };
+        if (!target.reactions[rKey]) target.reactions[rKey] = [];
+        const idx = target.reactions[rKey].indexOf(actorId);
+        if (idx >= 0) target.reactions[rKey].splice(idx, 1);
+        else target.reactions[rKey].push(actorId);
+      });
+    }
+
+    // =========================================================================
+    // 11. 渲染結算繪本大對決畫面 (Finished)
+    // =========================================================================
+    function renderFinished() {
+      const room = state.room;
+      const showAuthors = $('toggleAuthorTags').checked;
+      const { samePrompt, promptA, promptB } = room.settings;
+
+      $('hostNextRoundBtn').classList.toggle('hidden', !isHost());
+      updateMobileResultTabs();
+
+      ['A', 'B'].forEach(teamKey => {
+        const team = room.teams[teamKey];
+        const sentences = team.sentences || [];
+        const promptText = teamKey === 'A' ? promptA : (samePrompt ? promptA : promptB);
+        const authors = [...new Set(sentences.map(s => s.authorName))];
+        const rSum = countTeamReactions(sentences);
+
+        $(`bookAuthors${teamKey}`).textContent = `共同創作：${authors.length ? authors.join('、') : '尚無發言'}`;
+        $(`bookReactions${teamKey}`).innerHTML = `
+          <span class="px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-900">😂 笑死 ${rSum.laugh}</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-teamALight border border-indigo-200 text-teamA">😱 神展開 ${rSum.shock}</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-teamBLight border border-orange-200 text-teamB">🤔 吃書 ${rSum.plotHole}</span>
+        `;
+
+        const totalChars = sentences.reduce((a, s) => a + countChars(s.text), 0) + countChars(promptText);
+        $(`bookStats${teamKey}`).textContent = `共 ${sentences.length} 句・${totalChars} 字`;
+
+        const contentEl = $(`bookContent${teamKey}`);
+        contentEl.innerHTML = '';
+
+        if (showAuthors) {
+          if (promptText) {
+            contentEl.innerHTML += `
+              <div class="p-3 rounded-2xl bg-amber-50/80 border border-amber-200 text-sm">
+                <span class="font-sans text-xs font-black text-amber-900 mr-1.5">[開頭]</span>
+                <span>${escapeHtml(promptText)}</span>
+              </div>
+            `;
+          }
+          sentences.forEach((s, idx) => {
+            contentEl.innerHTML += `
+              <div class="flex items-baseline gap-2 flex-wrap sm:flex-nowrap">
+                <span class="font-sans text-[11px] font-bold px-2 py-0.5 rounded-full text-white shrink-0" style="background-color:${s.authorColor}">#${idx + 1} ${escapeHtml(s.authorName)}</span>
+                <span>${escapeHtml(s.text)}</span>
+              </div>
+            `;
+          });
+          if (!promptText && sentences.length === 0) {
+            contentEl.innerHTML = '<p class="text-center text-sm text-inkLight font-sans">（本組尚無接龍內容）</p>';
+          }
+        } else {
+          const parts = [];
+          if (promptText) parts.push(ensurePunctuation(promptText));
+          sentences.forEach(s => parts.push(ensurePunctuation(s.text)));
+          if (parts.length === 0) {
+            contentEl.innerHTML = '<p class="text-center text-sm text-inkLight font-sans">（本組尚無接龍內容）</p>';
+          } else {
+            for (let i = 0; i < parts.length; i += 5) {
+              const p = document.createElement('p');
+              p.className = 'indent-8 text-justify';
+              p.textContent = parts.slice(i, i + 5).join('');
+              contentEl.appendChild(p);
+            }
+          }
+        }
+      });
+    }
+
+    function updateMobileResultTabs() {
+      const isA = state.mobileResultTab === 'A';
+      $('mobileTabA').className = `py-2.5 rounded-xl text-xs font-black transition ${isA ? 'bg-teamA text-white' : 'text-inkLight hover:bg-[#FAF6EE]'}`;
+      $('mobileTabB').className = `py-2.5 rounded-xl text-xs font-black transition ${!isA ? 'bg-teamB text-white' : 'text-inkLight hover:bg-[#FAF6EE]'}`;
+
+      if (window.innerWidth < 768) {
+        $('bookPanelA').classList.toggle('hidden', !isA);
+        $('bookPanelA').classList.toggle('flex', isA);
+        $('bookPanelB').classList.toggle('hidden', isA);
+        $('bookPanelB').classList.toggle('flex', !isA);
+      } else {
+        $('bookPanelA').classList.remove('hidden');
+        $('bookPanelA').classList.add('flex');
+        $('bookPanelB').classList.remove('hidden');
+        $('bookPanelB').classList.add('flex');
+      }
+    }
+
+    function buildExportBothText(includeAuthors) {
+      const room = state.room;
+      const { samePrompt, promptA, promptB } = room.settings;
+      const lines = ['📖【社團故事接龍：兩組大對決】', '════════════════════', ''];
+
+      ['A', 'B'].forEach(teamKey => {
+        const team = room.teams[teamKey];
+        const sentences = team.sentences || [];
+        const promptText = teamKey === 'A' ? promptA : (samePrompt ? promptA : promptB);
+        const authors = [...new Set(sentences.map(s => s.authorName))].join('、');
+        const rSum = countTeamReactions(sentences);
+
+        lines.push(teamKey === 'A' ? '🔵 A 組（靛藍隊）' : '🟠 B 組（暖橘隊）');
+        lines.push(`👥 作者：${authors || '無'}`);
+        lines.push(`✨ 互動貼圖：😂${rSum.laugh}  😱${rSum.shock}  🤔${rSum.plotHole}`);
+        lines.push('────────────────────');
+
+        if (includeAuthors) {
+          if (promptText) lines.push(`[開頭] ${promptText}`);
+          sentences.forEach((s, idx) => lines.push(`${idx + 1}. 【${s.authorName}】${s.text}`));
+        } else {
+          const parts = [];
+          if (promptText) parts.push(ensurePunctuation(promptText));
+          sentences.forEach(s => parts.push(ensurePunctuation(s.text)));
+          for (let i = 0; i < parts.length; i += 5) {
+            lines.push('　　' + parts.slice(i, i + 5).join(''));
+          }
+        }
+        lines.push('', '');
+      });
+
+      lines.push('✨ 由「故事接龍：兩組對決版」共創完成');
+      return lines.join('\n');
+    }
+
+    // =========================================================================
+    // 12. 綁定所有 UI 事件
+    // =========================================================================
+    function bindEvents() {
+      // 導覽列
+      $('navHomeBtn').addEventListener('click', () => { if (state.room) leaveRoom(false); });
+      $('leaveRoomBtn').addEventListener('click', () => leaveRoom(false));
+      $('soundToggleBtn').addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        $('soundToggleBtn').textContent = state.soundEnabled ? '🔊' : '🔇';
+        showToast(state.soundEnabled ? '🔊 音效已開啟' : '🔇 音效已靜音');
+      });
+
+      // 首頁模式切換
+      $('homeTabOnline').addEventListener('click', () => setHomeTab('online'));
+      $('homeTabLocal').addEventListener('click', () => setHomeTab('local'));
+
+      // 滑桿數值
+      $('onlineMaxPerTeam').addEventListener('input', (e) => {
+        state.onlineForm.maxPerTeam = Number(e.target.value);
+        $('onlineMaxPerTeamVal').textContent = e.target.value;
+      });
+      $('localMaxPerTeam').addEventListener('input', (e) => {
+        state.localForm.maxPerTeam = Number(e.target.value);
+        $('localMaxPerTeamVal').textContent = e.target.value;
+      });
+
+      // 通用選項按鈕群組
+      document.querySelectorAll('.opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const group = btn.dataset.group;
+          const val = btn.dataset.val;
+          if (group === 'onlineChars') state.onlineForm.maxChars = Number(val);
+          else if (group === 'onlineTurn') state.onlineForm.turnMode = val;
+          else if (group === 'localChars') state.localForm.maxChars = Number(val);
+          else if (group === 'localTurn') state.localForm.turnMode = val;
+
+          document.querySelectorAll(`.opt-btn[data-group="${group}"]`).forEach(b => {
+            const active = b === btn;
+            const isCharGroup = group.includes('Chars');
+            if (isCharGroup) {
+              b.className = `opt-btn ${group === 'localChars' ? 'py-2.5' : 'py-2'} rounded-xl text-xs font-bold border ${
+                active ? 'bg-teamB text-white border-teamB' : 'bg-[#FAF6EE] text-inkLight border-[#E2D6C0]'
+              }`;
+            } else {
+              b.className = `opt-btn ${group === 'localTurn' ? 'p-3' : 'p-2.5'} rounded-xl text-left border ${
+                active ? 'bg-teamA text-white border-teamA' : 'bg-[#FAF6EE] text-ink border-[#E2D6C0]'
+              }`;
+            }
+          });
+        });
+      });
+
+      // 建立 / 加入 / 單機開始按鈕
+      $('createOnlineRoomBtn').addEventListener('click', createOnlineRoom);
+      $('startLocalLobbyBtn').addEventListener('click', startLocalLobby);
+      $('joinOnlineRoomBtn').addEventListener('click', joinOnlineRoom);
+
+      $('joinRoomCodeInput').addEventListener('input', (e) => {
+        const v = e.target.value.trim().toUpperCase();
+        e.target.value = v;
+        if (v.length === 5) lookupRoomForJoin(v);
+      });
+      $('checkRoomBtn').addEventListener('click', () => {
+        lookupRoomForJoin($('joinRoomCodeInput').value.trim().toUpperCase());
+      });
+      $('pickTeamABtn').addEventListener('click', () => {
+        if ($('pickTeamABtn').disabled) return;
+        state.joinForm.selectedTeam = 'A';
+        updateJoinTeamButtonsUI(state.joinForm.lookupRoom);
+      });
+      $('pickTeamBBtn').addEventListener('click', () => {
+        if ($('pickTeamBBtn').disabled) return;
+        state.joinForm.selectedTeam = 'B';
+        updateJoinTeamButtonsUI(state.joinForm.lookupRoom);
+      });
+
+      // 大廳 QR Code 彈窗與自訂分享網址
+      $('openQrModalBtn').addEventListener('click', () => $('qrFullscreenModal').classList.remove('hidden'));
+      $('closeQrModalBtn').addEventListener('click', () => $('qrFullscreenModal').classList.add('hidden'));
+      $('qrFullscreenModal').addEventListener('click', (e) => {
+        if (e.target === $('qrFullscreenModal')) $('qrFullscreenModal').classList.add('hidden');
+      });
+
+      $('applyCustomQrUrlBtn').addEventListener('click', () => {
+        const val = $('customShareUrlInput').value.trim();
+        if (!val) {
+          state.customBaseUrl = '';
+          state.lastQrTarget = '';
+          if (state.room) updateQrImages(state.room.roomCode);
+          showToast('已恢復預設 QR Code', 'info');
+          return;
+        }
+        try {
+          new URL(val);
+          state.customBaseUrl = val;
+          state.lastQrTarget = '';
+          if (state.room) updateQrImages(state.room.roomCode);
+          showToast('QR Code 已更新為你的分享網址！', 'success');
+        } catch (_) {
+          showToast('請輸入有效的網址（需包含 https://）', 'warn');
+        }
+      });
+
+      $('copyInviteLinkBtn').addEventListener('click', () => {
+        if (!state.room) return;
+        const url = buildInviteUrl(state.room.roomCode);
+        copyTextToClipboard(`⚔️ 社團「故事接龍：兩組對決」開戰啦！\n房號：【${state.room.roomCode}】\n${url}`, '已複製邀請連結！');
+      });
+      $('copyRoomCodeBtn').addEventListener('click', () => {
+        if (state.room) copyTextToClipboard(state.room.roomCode, `已複製房號：${state.room.roomCode}`);
+      });
+
+      $('memberSwitchOwnTeamBtn').addEventListener('click', () => {
+        const myTeam = getMyTeamKey();
+        if (myTeam) swapPlayerTeam(state.userId, myTeam);
+      });
+
+      // 測試組員與單機新增隊員
+      $('addTestPlayersBtn').addEventListener('click', addTestPlayers);
+
+      $('localAddAForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = $('localAddAInput').value.trim();
+        if (!name || !state.room) return;
+        if (state.room.teams.A.players.length >= state.room.settings.maxPerTeam) {
+          showToast('A 組人數已達上限！', 'warn');
+          return;
+        }
+        mutateRoom((draft) => {
+          draft.teams.A.players.push({
+            id: 'lp_A_' + Date.now(),
+            name,
+            color: COLORS_A[draft.teams.A.players.length % COLORS_A.length],
+            isBot: false
+          });
+        });
+        $('localAddAInput').value = '';
+      });
+
+      $('localAddBForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = $('localAddBInput').value.trim();
+        if (!name || !state.room) return;
+        if (state.room.teams.B.players.length >= state.room.settings.maxPerTeam) {
+          showToast('B 組人數已達上限！', 'warn');
+          return;
+        }
+        mutateRoom((draft) => {
+          draft.teams.B.players.push({
+            id: 'lp_B_' + Date.now(),
+            name,
+            color: COLORS_B[draft.teams.B.players.length % COLORS_B.length],
+            isBot: false
+          });
+        });
+        $('localAddBInput').value = '';
+      });
+
+      // 大廳：房主出題控制
+      $('toggleDifferentPrompts').addEventListener('change', (e) => {
+        if (!isHost() || !state.room) return;
+        mutateRoom((draft) => { draft.settings.samePrompt = !e.target.checked; });
+      });
+
+      document.querySelectorAll('.draw-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!isHost() || !state.room) return;
+          const cat = btn.dataset.cat;
+          const target = btn.dataset.target;
+          const pool = OPENING_PROMPTS[cat] || [];
+          const cur = target === 'A' ? state.room.settings.promptA : state.room.settings.promptB;
+          const cands = pool.filter(x => x !== cur);
+          const pick = cands[Math.floor(Math.random() * cands.length)] || pool[0];
+          playSound('react');
+          mutateRoom((draft) => {
+            if (target === 'A') draft.settings.promptA = pick;
+            else draft.settings.promptB = pick;
+          });
+        });
+      });
+
+      let timerA = null;
+      $('hostPromptAInput').addEventListener('input', (e) => {
+        if (!isHost() || !state.room) return;
+        clearTimeout(timerA);
+        timerA = setTimeout(() => {
+          mutateRoom((draft) => { draft.settings.promptA = e.target.value.trim(); });
+        }, 300);
+      });
+
+      let timerB = null;
+      $('hostPromptBInput').addEventListener('input', (e) => {
+        if (!isHost() || !state.room) return;
+        clearTimeout(timerB);
+        timerB = setTimeout(() => {
+          mutateRoom((draft) => { draft.settings.promptB = e.target.value.trim(); });
+        }, 300);
+      });
+
+      // 統一開始遊戲
+      $('hostStartGameBtn').addEventListener('click', async () => {
+        if (!isHost() || !state.room) return;
+        playSound('turn');
+        await mutateRoom((draft) => {
+          draft.status = 'playing';
+          draft.teams.A.currentTurnIndex = 0;
+          draft.teams.A.sentences = [];
+          draft.teams.B.currentTurnIndex = 0;
+          draft.teams.B.sentences = [];
+        });
+      });
+
+      // 房主監控台互動
+      $('toggleSpoilerShield').addEventListener('change', (e) => {
+        state.spoilerShield = e.target.checked;
+        renderHostPlaying();
+      });
+
+      document.querySelectorAll('.host-skip-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!isHost() || !state.room) return;
+          const tKey = btn.dataset.skipTeam;
+          await mutateRoom((draft) => {
+            const len = draft.teams[tKey].players.length;
+            if (len > 0) draft.teams[tKey].currentTurnIndex = (draft.teams[tKey].currentTurnIndex + 1) % len;
+          });
+          showToast(`已跳過 ${tKey} 組目前輪次`, 'info');
+        });
+      });
+
+      $('hostSimInputA').addEventListener('input', () => updateHostSimCounter('A'));
+      $('hostSimInputB').addEventListener('input', () => updateHostSimCounter('B'));
+      $('hostSimFormA').addEventListener('submit', (e) => handleHostSimSubmit('A', e));
+      $('hostSimFormB').addEventListener('submit', (e) => handleHostSimSubmit('B', e));
+
+      $('hostEndGameBtn').addEventListener('click', async () => {
+        if (!isHost() || !state.room) return;
+        const ok = await showConfirmModal(
+          '結束接龍並揭曉故事？',
+          '確定結束嗎？按下後將立刻揭曉 A 組與 B 組的完整故事繪本！',
+          '揭曉兩組故事'
+        );
+        if (!ok) return;
+        await mutateRoom((draft) => { draft.status = 'finished'; });
+      });
+
+      // 線上組員輸入
+      $('memberSentenceInput').addEventListener('input', updateMemberCharCounter);
+      $('memberSentenceForm').addEventListener('submit', handleMemberSubmit);
+
+      // 結算畫面互動
+      $('toggleAuthorTags').addEventListener('change', renderFinished);
+      $('mobileTabA').addEventListener('click', () => { state.mobileResultTab = 'A'; updateMobileResultTabs(); });
+      $('mobileTabB').addEventListener('click', () => { state.mobileResultTab = 'B'; updateMobileResultTabs(); });
+      window.addEventListener('resize', () => {
+        if (state.view === 'finished') updateMobileResultTabs();
+      });
+
+      $('copyBothStoriesBtn').addEventListener('click', () => {
+        const text = buildExportBothText($('toggleAuthorTags').checked);
+        copyTextToClipboard(text, '已複製兩組完整故事！');
+      });
+
+      $('downloadBothTxtBtn').addEventListener('click', () => {
+        try {
+          const text = buildExportBothText($('toggleAuthorTags').checked);
+          const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `社團故事接龍對決_${state.room?.roomCode || 'story'}.txt`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('已下載兩組故事 .txt 檔！', 'success');
+        } catch (_) {
+          showToast('下載失敗，請改用「複製兩組完整故事」', 'warn');
+        }
+      });
+
+      $('hostNextRoundBtn').addEventListener('click', async () => {
+        if (!isHost() || !state.room) return;
+        const ok = await showConfirmModal(
+          '原班人馬再來一題？',
+          '將保留目前的 A／B 兩組名單並回到大廳，讓房主重新抽題開始下一輪！',
+          '回到大廳'
+        );
+        if (!ok) return;
+        await mutateRoom((draft) => {
+          draft.status = 'lobby';
+          draft.teams.A.currentTurnIndex = 0;
+          draft.teams.A.sentences = [];
+          draft.teams.B.currentTurnIndex = 0;
+          draft.teams.B.sentences = [];
+        });
+      });
+    }
+
+    // =========================================================================
+    // 13. 啟動程式（先顯示首頁，背景連線 Firebase）
+    // =========================================================================
+    bindEvents();
+    switchView('home');
+    initFirebase();
+  </script>
+</body>
+</html>
